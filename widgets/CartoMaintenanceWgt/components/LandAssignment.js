@@ -85,7 +85,7 @@ define(["esri/graphic", "esri/geometry/Circle", "esri/geometry/Point"], function
             var pointLotSelectionRow = pointLotSelection.parentNode.parentNode;
             // id of land selected
             var landId = pointLotSelectionRow.dataset.id;
-            var landCpm = pointLotSelectionRow.dataset.cpm;
+            // const landCpm = pointLotSelectionRow.dataset.cpm;
             this.removeGraphic(landId);
             // id of point lot selected
             var pointLotId = pointLotSelection.selectedOptions[0].dataset.id;

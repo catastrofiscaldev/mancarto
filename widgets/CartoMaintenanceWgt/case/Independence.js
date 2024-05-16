@@ -26,7 +26,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/reque
             var query = new Query();
             query.returnGeometry = false;
             query.outFields = ["OBJECTID", "GLOBALID", LandCls.tipPred];
-            query.where = LandCls.codPre + " = '" + this.matrixLand[0].cpm + "' and " + LandCls.ubigeo + " = '" + this.ubigeo + "'";
+            query.where = LandCls.codCpu + " = '" + this.matrixLand[0].cup + "' and " + LandCls.ubigeo + " = '" + this.ubigeo + "'";
             queryTask.execute(query).then(function (result) {
                 var matrixLand = result.features;
                 matrixLand[0].attributes[LandCls.tipPred] = _this.matrixLandDomain;
