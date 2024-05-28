@@ -5,7 +5,7 @@
   #D2D2D2: #D2D2D2;
   #66BB6A: #66BB6A;
   #F89500: #F89500;
-  #E9F6FF: #E9F6FF;
+  #d7eaf7: #d7eaf7;
   #E96479: #E96479;
   #ECECEC: #ECECEC;
 } */
@@ -105,7 +105,7 @@ p {
 }
 
 #reportCtnCm {
-  margin-top: 20px;
+  /* margin-top: 20px; */
   text-align: right;
 }
 
@@ -224,7 +224,7 @@ p {
 .backObsClsCtn {
   width: 100%;
   height: 30px;
-  background-color: #E9F6FF;
+  background-color: #d7eaf7;
   position: sticky;
   top: 0;
 }
@@ -781,4 +781,34 @@ input[type='file'] {
 
 .attributteCtnClsCm {
   width: 48%;
+}
+
+
+#paginationCtnCm {
+  display: flex;
+  flex-direction: row;
+  margin: 10px 0 10px 0;
+}
+
+.buttonPaginationCtnCm {
+  display: flex;
+  flex-direction: row;
+}
+
+.buttonPagination {
+  border: none;
+  background: none;
+  cursor: pointer;
+  /* Text size */
+  font-size: 20px;
+  /* vertical and horizontal aling center */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  color: #1e293b;
+}
+
+.selectLimitClsCm {
+  margin-right: 20px;
 }

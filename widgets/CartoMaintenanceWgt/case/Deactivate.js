@@ -3,6 +3,7 @@ define(["./UtilityCase"], function (UtilityCase) {
     * @description: Objeto que contiene las funciones para la inactivacion de lotes
     */
     var Deactivate = {
+        nameCase: 'Inactivar',
         codRequest: null, // @params: Código de la solicitud
         caseRequest: null, // @params
         user: null, // @params

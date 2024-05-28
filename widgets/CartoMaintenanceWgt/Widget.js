@@ -58,9 +58,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
   var idLyrDistricts = "limites_nacional_1821_2";
 
   var iconByState = {
-    "por_atender": { 'icon': 'fas fa-pencil-alt', 'id': 'editRequestsCm', 'desc': "Por atender" },
-    "observado": { 'icon': 'fas fa-pause', 'id': 'obsRequestsCm', 'desc': "Observado" },
-    "atendido": { 'icon': 'fas fa-check', 'id': 'goodRequestsCm', 'desc': "Atendido" }
+    "por_atender": { 'icon': 'fas fa-pencil-alt', 'id': 'editRequestsCm', 'desc': "Por atender", 'idStatus': 1 },
+    "observado": { 'icon': 'fas fa-pause', 'id': 'obsRequestsCm', 'desc': "Observado", 'idStatus': 3 },
+    "atendido": { 'icon': 'fas fa-check', 'id': 'goodRequestsCm', 'desc': "Atendido", 'idStatus': 2 }
 
     // Fields 
   };var _UBIGEO_FIELD = "UBIGEO";
@@ -173,7 +173,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
     baseClass: 'carto-maintenance-wgt',
     codRequestsCm: null,
-    currentTabActive: null,
+    currentTabActive: requestToAttendState,
     layersMap: [],
     queryUbigeo: paramsApp['ubigeo'] ? _UBIGEO_FIELD + ' = \'' + paramsApp['ubigeo'] + '\'' : "1=1",
     case: 0,
@@ -192,10 +192,13 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     idButtonDrawActive: '',
     queryRequests: {
       ubigeo: paramsApp['ubigeo'],
-      limit: 1000000,
+      limit: 25,
+      offset: 0,
       ordering: "date"
     },
-
+    // defaultLimit: 25,
+    defaultOffset: 0,
+    currentCount: 0,
     responseRequests: null,
     currentLotsRows: null,
     currentLandRows: null,
@@ -338,7 +341,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       return data;
     },
     _loadIniRequestsCm: function _loadIniRequestsCm() {
-      dojo.query('#' + requestToAttendState)[0].click();
+      dojo.query('#' + selfCm.currentTabActive)[0].click();
     },
     _parseDateStringtoFormat: function _parseDateStringtoFormat(dateString) {
       var date = new Date(dateString);
@@ -347,18 +350,25 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       var year = date.getFullYear();
       return day + '/' + month + '/' + year;
     },
-    _loadRequestsCm: function _loadRequestsCm(evt) {
+    _loadRequestTabActiveCm: function _loadRequestTabActiveCm(evt) {
+      // selfCm.busyIndicator.show();
+      selfCm.currentTabActive = evt.target.id;
+      selfCm.currentElementActive = evt.target;
+      selfCm.queryRequests['id_status'] = iconByState[evt.target.id].idStatus;
+      selfCm.queryRequests['offset'] = selfCm.defaultOffset;
+      selfCm._loadRequestsCm();
+      // .then(selfCm._controlLabelPagination());
+    },
+    _loadRequestsCm: function _loadRequestsCm() {
       selfCm.busyIndicator.show();
       selfCm._callApiRestServices(selfCm.config.applicationListUrl, selfCm.queryRequests).then(function (response) {
+        selfCm.currentCount = response['count'];
+
         response = response['results'];
-        // modificar el servicio para devolver los CPU
-        selfCm.currentTabActive = evt.target.id;
-        var estado = iconByState[evt.target.id].desc;
-        var data = selfCm._getRequestsTrayDataCm(response, estado);
-        var dataHtml = data.map(function (i) {
+        var dataHtml = response.map(function (i) {
           return '<tr>\n                                        <td>' + i.id + '</td>\n                                        <td>' + i.type + '</td>\n                                        <td>' + i.lands.map(function (lnd) {
             return lnd['cup'];
-          }).join(',') + '</td>\n                                        <td>' + selfCm._parseDateStringtoFormat(i.date) + '</td>\n                                        <td>\n                                          <button id="' + iconByState[evt.target.id].id + '" value="' + i.idType + '" class="stateRequestClsCm">\n                                            <i class="' + iconByState[evt.target.id].icon + '"></i>\n                                          </button>\n                                        </td>\n                                      </tr>';
+          }).join(', ') + '</td>\n                                        <td>' + selfCm._parseDateStringtoFormat(i.date) + '</td>\n                                        <td>\n                                          <button id="' + iconByState[selfCm.currentTabActive].id + '" value="' + i.idType + '" class="stateRequestClsCm">\n                                            <i class="' + iconByState[selfCm.currentTabActive].icon + '"></i>\n                                          </button>\n                                        </td>\n                                      </tr>';
         });
         var tbody = dojo.create('tbody', { innerHTML: dataHtml.join('') });
         var tb = dojo.query(".tableRequestClsCm")[0];
@@ -366,17 +376,37 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           selfCm.tableRequestApCm.removeChild(tb.getElementsByTagName("tbody")[0]);
         }
         selfCm.tableRequestApCm.appendChild(tbody);
-        if (evt.target.id == requestToAttendState) {
+        if (selfCm.currentTabActive == requestToAttendState) {
           dojo.query(".stateRequestClsCm").on('click', selfCm._openFormCase);
         }
-        if (evt.target.id == requestsAttendState) {
+        if (selfCm.currentTabActive == requestsAttendState) {
           dojo.query(".stateRequestClsCm").on('click', selfCm._openFormResult);
         }
 
         dojo.query(".tablinksCm").removeClass("active");
-        evt.target.classList.add("active");
+        selfCm.currentElementActive.classList.add("active");
+        selfCm._controlLabelPagination();
         selfCm.busyIndicator.hide();
       });
+    },
+    _changeLimitPagination: function _changeLimitPagination(evt) {
+      selfCm.queryRequests['limit'] = parseInt(evt.target.value);
+      selfCm._loadRequestsCm();
+    },
+    _nextPagePagination: function _nextPagePagination(evt) {
+      selfCm.queryRequests['offset'] = selfCm.queryRequests['offset'] + selfCm.queryRequests['limit'];
+      selfCm._loadRequestsCm();
+    },
+    _prevPagePagination: function _prevPagePagination(evt) {
+      selfCm.queryRequests['offset'] = selfCm.queryRequests['offset'] - selfCm.queryRequests['limit'];
+      selfCm._loadRequestsCm();
+    },
+    _controlLabelPagination: function _controlLabelPagination() {
+      var ini = selfCm.queryRequests['offset'] == 0 ? 1 : selfCm.queryRequests['offset'];
+      dojo.query(".buttonPaginationPrevClsCm")[0].disabled = ini == 1 ? true : false;
+      var end = selfCm.queryRequests['offset'] + selfCm.queryRequests['limit'];
+      dojo.query(".buttonPaginationNextClsCm")[0].disabled = end >= selfCm.currentCount ? true : false;
+      dojo.query(".labelPaginationCtnCm")[0].innerHTML = ini + ' - ' + end + ' de ' + selfCm.currentCount;
     },
     _zoomToPredSelectedEvt: function _zoomToPredSelectedEvt(evt) {
       // @cpu
@@ -562,79 +592,13 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       });
     },
     _zoomExtentToLote: function _zoomExtentToLote() {
+      if (!this.currentLotsRows) {
+        return;
+      }
       var unionPredios = this._unionFeatures(this.currentLotsRows.map(function (i) {
         return i.geometry;
       }));
       this.map.setExtent(unionPredios.getExtent().expand(2));
-    },
-    _zoomExtentToLoteRefactor: function _zoomExtentToLoteRefactor(cod_pre) {
-      var query = new Query();
-
-      query.where = _UBIGEO_FIELD + ' = \'' + paramsApp['ubigeo'] + '\' and ' + _COD_PRE_FIELD + ' in (\'' + cod_pre.split(',').join("', '") + '\')';
-      // fields return
-      query.outFields = [_ID_LOTE_P_FIELD, _COD_MZN_FIELD, _COD_SECT_FIELD];
-      query.returnGeometry = false;
-
-      // Return distinct values
-      query.returnDistinctValues = true;
-
-      // let qTask = new QueryTask(selfCm.layersMap.getLayerInfoById(idLyrCfPredios).getUrl())
-      var urlPredios = selfCm.layersMap.getLayerInfoById(idLyrCfPredios).getUrl();
-
-      return selfCm.executeQueryTask(urlPredios, query).then(function (results) {
-        var idLote = results.features.map(function (i) {
-          return i.attributes[_ID_LOTE_P_FIELD];
-        });
-        // selfCm.idlotes = idLote;
-        var idmanzana = results.features.map(function (i) {
-          return i.attributes[_COD_MZN_FIELD];
-        });
-        var idsector = results.features.map(function (i) {
-          return i.attributes[_COD_SECT_FIELD];
-        });
-        var queryLote = new Query();
-        queryLote.where = _ID_LOTE_P_FIELD + ' in (' + idLote.join(",") + ') and (' + _UBIGEO_FIELD + ' = ' + paramsApp['ubigeo'] + ')';
-        selfCm.lotesQuery = queryLote.where;
-        selfCm.arancel = _UBIGEO_FIELD + ' = \'' + paramsApp.ubigeo + '\' and (' + _COD_MZN_FIELD + ' in (' + idmanzana.join(",") + ')) and (' + _COD_SECT_FIELD + ' IN (' + idsector.join(",") + '))';
-        queryLote.returnGeometry = true;
-        var urlLotes = selfCm.layersMap.getLayerInfoById(idLyrCfLotes).getUrl();
-        selfCm.busyIndicator.hide();
-        return selfCm.executeQueryTask(urlLotes, queryLote);
-      }).then(function (results) {
-        if (results.features.length == 0) {
-          // execute error for catch
-          throw new Error(selfCm.nls.emptyLotSelected);
-        }
-        var unionPredios = selfCm._unionFeatures(results.features.map(function (i) {
-          return i.geometry;
-        }));
-
-        selfCm.map.setExtent(unionPredios.getExtent().expand(2));
-
-        var graphic = new Graphic(unionPredios, symbolLoteSelected);
-        var featureSelected = new GraphicsLayer({
-          id: idGraphicLoteSelectedCm
-        });
-        featureSelected.add(graphic);
-        selfCm.map.addLayer(featureSelected);
-
-        // Parpadeo de seleccion
-        var interval = setInterval(function () {
-          var graphic = featureSelected.graphics[0];
-          graphic.setSymbol(graphic.symbol === symbolLoteSelected ? null : symbolLoteSelected);
-        }, 200);
-
-        setTimeout(function () {
-          clearInterval(interval);
-          selfCm._removeLayerGraphic(idGraphicLoteSelectedCm);
-        }, 2000);
-        selfCm.busyIndicator.hide();
-        return selfCm.map.setExtent(unionPredios.getExtent().expand(2));
-      }).catch(function (error) {
-        console.log(error);
-        selfCm.busyIndicator.hide();
-        throw error;
-      });
     },
     _zoomHomeRequests: function _zoomHomeRequests() {
       return selfCm._zoomExtentToLote();
@@ -660,6 +624,12 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             responseResults = _ref2[1],
             responseDocSupport = _ref2[2];
 
+        if (!_) {
+          selfCm.busyIndicator.hide();
+          selfCm._showMessage(selfCm.nls.empyLandResultsRequests, type = "error");
+          // return
+        }
+
         var rows = selfCm.currentLandTabRows.map(function (i, idx) {
           return CaseInfo.contentCard(i, 'original', i.cup, active = selfCm.case != 2 ? true : false);
         });
@@ -668,7 +638,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           if (responseResults.results.length == 0) {
             selfCm._showMessage(selfCm.nls.empyLandResultsRequests + ' ' + selfCm.codRequestsCm, type = "error");
             selfCm.busyIndicator.hide();
-            return;
+            // return
           }
         }
 
@@ -678,8 +648,6 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
         if (selfCm.case != 4) {
           var rowsResults = responseResults.results.map(function (i, idx) {
-            // const otherAttributes = selfCm.case === "5" ? true : false;
-            // console.log(otherAttributes, '.....')
             return CaseInfo.contentCard(i, 'result', idx + 1, false, true);
           });
           dojo.query('.CtnResultClsCm')[0].innerHTML = rowsResults.join('');
@@ -743,7 +711,6 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       }).catch(function (error) {
         selfCm.busyIndicator.hide();
         selfCm._showMessage(error.message, type = "error");
-        console.log(error);
       });
     },
     _openFormCase: function _openFormCase(evt) {
@@ -790,7 +757,11 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         selfCm.obsCtnApCm.classList.remove('active');
         selfCm.requestTrayApCm.classList.toggle('active');
         selfCm._removeClassActiveButton();
-        selfCm._loadIniRequestsCm();
+        if (selfCm.currentTabActive == requestsAttendState) {
+          selfCm.queryRequests['offset'] = selfCm.defaultOffset;
+        }
+        selfCm._loadRequestsCm();
+        // selfCm._loadIniRequestsCm();
       }
     },
     _openFormObs: function _openFormObs() {
@@ -805,6 +776,11 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _FormResult: function _FormResult(id_solicitud, caseCm) {
       var urlPredioResults = selfCm.config.resultsByApplication + '/' + id_solicitud;
+      if (caseCm == Deactivate.nameCase) {
+        selfCm.busyIndicator.hide();
+        selfCm._showMessage(selfCm.nls.resultDeactivate);
+        return;
+      }
       selfCm._callApiRestServices(urlPredioResults, {}).then(function (response) {
         try {
           selfCm.bodyTbResultsApCm.innerHTML = '';
@@ -1245,10 +1221,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm._removeClassActiveButton();
       selfCm.idButtonDrawActive = evt.currentTarget.id;
       dojo.query('#' + selfCm.idButtonDrawActive)[0].classList.add('activeButton');
-      // const id = evt.currentTarget.id
       selfCm.cpmPredioDivision = evt.currentTarget.dataset.cpm === 'null' ? null : evt.currentTarget.dataset.cpm;
       selfCm.idPredioDivision = evt.currentTarget.parentElement.parentElement.id;
-      // console.log(selfCm.idPredioDivision);
       var graphic = graphicLayerPredioByDivison.graphics.filter(function (item) {
         return item.attributes.id === selfCm.idPredioDivision;
       });
@@ -1611,7 +1585,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     _addGraphicsPointLotsAndArancel: function _addGraphicsPointLotsAndArancel() {
       var deferred = new Deferred();
       var query = new Query();
-      query.where = selfCm.arancel;
+      query.where = selfCm.arancel + ' and ID_SVIA IS NOT NULL';
       // especificar los campos devueltos
       query.outFields = [_UBIGEO_FIELD, _F_MZN_FIELD];
       query.returnGeometry = true;
@@ -2360,11 +2334,12 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     _searchRequestByCodPred: function _searchRequestByCodPred(evt) {
       if (evt.keyCode === 13) {
         if (evt.target.value == '') {
-          if ('cpm' in selfCm.queryRequests) {
-            delete selfCm.queryRequests['cpm'];
+          if ('cup' in selfCm.queryRequests) {
+            delete selfCm.queryRequests['cup'];
           }
         } else {
-          selfCm.queryRequests['cpm'] = evt.target.value;
+          selfCm.queryRequests['cup'] = evt.target.value;
+          // selfCm.queryRequests.limit = selfCm.defaultLimit;
         }
         dojo.query(".tablinksCm.active")[0].click();
       }
@@ -2385,7 +2360,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       this._createToolbar();
 
       dojo.query(".backTrayClsCm").on('click', this._openFormCase);
-      dojo.query(".tablinksCm").on('click', this._loadRequestsCm);
+      dojo.query(".tablinksCm").on('click', this._loadRequestTabActiveCm);
       dojo.query("#btnObsCaseCm").on('click', this._openFormObs);
       dojo.query(".backRequestsClsCm").on('click', this._openFormObs);
       // dojo.query("#goodRequestsCm").on('click', this._openFormResult);
@@ -2407,6 +2382,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       dojo.query('#sendDataObsGrCm').on('click', this._sendObservation);
       dojo.query('#searchTbxCm').on("keyup", this._searchRequestByCodPred);
       dojo.query('.columnDateClsCm').on("click", this._sortedByDate);
+      dojo.query('.selectLimitClsCm').on("change", this._changeLimitPagination);
+      dojo.query('.buttonPaginationPrevClsCm').on("click", this._prevPagePagination);
+      dojo.query('.buttonPaginationNextClsCm').on("click", this._nextPagePagination);
       // dojo.query('.columnCaseClsCm').on("click", this._sortedByDate)
       this._loadIniRequestsCm();
 

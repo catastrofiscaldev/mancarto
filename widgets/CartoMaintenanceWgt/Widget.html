@@ -26,7 +26,19 @@
         </table>
       </div>
       <div id="paginationCtnCm">
-        <!-- implementar el paginado aqui -->
+        <select name="" class="selectLimitClsCm">
+          <option value="5" selected>5</option>
+          <option value="10" selected>10</option>
+          <option value="25" selected>25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="200">200</option>
+        </select>
+        <div class="labelPaginationCtnCm">1 - 25</div>
+        <div class="buttonPaginationCtnCm">
+          <button class="buttonPaginationPrevClsCm buttonPagination"><i class='fas fa-angle-left'></i></button>
+          <button class="buttonPaginationNextClsCm buttonPagination"><i class='fas fa-angle-right'></i></button>
+        </div>
       </div>
       <div id="reportCtnCm">
         <button id="btnReportCm"><i class="fas fa-file-alt"></i> ${nls.report}</button>

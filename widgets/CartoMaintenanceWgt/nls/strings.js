@@ -4,7 +4,7 @@ define({
     widgetTitle: 'Carto Maintenance Wgt',
     description: 'A custom Web AppBuilder widget.',
     statusToAttend: 'Por atender',
-    searchByCodeRequest: 'Búsqueda por código de solicitud',
+    searchByCodeRequest: 'Búsqueda por código de predio único',
     statusObserved: 'Observado',
     statusServiced: 'Atendidos',
     errorSnapingLocate: 'La ubicación donde desea registrar el predio no es valida, este se debe ubicar sobre un punto lote.',
@@ -59,6 +59,7 @@ define({
     emptyLandResultSubdivision: "La solicitud no se puede realizar porque uno de los lotes no tiene un predio resultante",
     // 'No se ha dibujado ninguna linea de division'
     emptyLineSubdivision: "No se ha dibujado ninguna linea de division",
+    resultDeactivate: "Esta operación ha sido completada con éxito. El predio seleccionado está inactivo, por lo que su visualización no está disponible.",
 
   }
   // add supported locales below:
