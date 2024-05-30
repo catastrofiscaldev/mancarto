@@ -391,6 +391,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _changeLimitPagination: function _changeLimitPagination(evt) {
       selfCm.queryRequests['limit'] = parseInt(evt.target.value);
+      selfCm.queryRequests['offset'] = selfCm.defaultOffset;
       selfCm._loadRequestsCm();
     },
     _nextPagePagination: function _nextPagePagination(evt) {
@@ -399,10 +400,13 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _prevPagePagination: function _prevPagePagination(evt) {
       selfCm.queryRequests['offset'] = selfCm.queryRequests['offset'] - selfCm.queryRequests['limit'];
+      // if (selfCm.queryRequests['offset'] < 0) {
+      //   selfCm.queryRequests['offset'] = 0; // Ensure offset does not go negative
+      // }
       selfCm._loadRequestsCm();
     },
     _controlLabelPagination: function _controlLabelPagination() {
-      var ini = selfCm.queryRequests['offset'] == 0 ? 1 : selfCm.queryRequests['offset'];
+      var ini = selfCm.queryRequests['offset'] + 1;
       dojo.query(".buttonPaginationPrevClsCm")[0].disabled = ini == 1 ? true : false;
       var end = selfCm.queryRequests['offset'] + selfCm.queryRequests['limit'];
       dojo.query(".buttonPaginationNextClsCm")[0].disabled = end >= selfCm.currentCount ? true : false;
@@ -757,8 +761,10 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         selfCm.obsCtnApCm.classList.remove('active');
         selfCm.requestTrayApCm.classList.toggle('active');
         selfCm._removeClassActiveButton();
-        if (selfCm.currentTabActive == requestsAttendState) {
-          selfCm.queryRequests['offset'] = selfCm.defaultOffset;
+        if (selfCm.currentTabActive == requestToAttendState) {
+          dojo.query(".tablinksCm.active")[0].click();
+          // selfCm._loadRequestTabActiveCm()
+          // selfCm.queryRequests['offset'] = selfCm.defaultOffset;
         }
         selfCm._loadRequestsCm();
         // selfCm._loadIniRequestsCm();
@@ -775,6 +781,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm.obsCtnApCm.classList.toggle('active');
     },
     _FormResult: function _FormResult(id_solicitud, caseCm) {
+      selfCm.busyIndicator.show();
       var urlPredioResults = selfCm.config.resultsByApplication + '/' + id_solicitud;
       if (caseCm == Deactivate.nameCase) {
         selfCm.busyIndicator.hide();
@@ -798,6 +805,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           selfCm.busyIndicator.hide();
         } catch (error) {
           console.log(error);
+          selfCm.busyIndicator.hide();
         }
       });
     },
