@@ -13,5 +13,6 @@
   "landHistoricUrl": "https://ws.mineco.gob.pe/serverdf/rest/services/pruebas/CARTO_FISCAL_H/FeatureServer/0",
   "lotUrl": "https://ws.mineco.gob.pe/serverdf/rest/services/pruebas/CARTO_FISCAL/FeatureServer/5",
   "pointLotUrl": "https://ws.mineco.gob.pe/serverdf/rest/services/pruebas/CARTO_FISCAL/FeatureServer/1",
-  "landUrl": "https://ws.mineco.gob.pe/serverdf/rest/services/pruebas/CARTO_FISCAL/FeatureServer/0"
+  "landUrl": "https://ws.mineco.gob.pe/serverdf/rest/services/pruebas/CARTO_FISCAL/FeatureServer/0",
+  "geometryServiceUrl": "https://ws.mineco.gob.pe/serverdf/rest/services/Utilities/Geometry/GeometryServer"
 }

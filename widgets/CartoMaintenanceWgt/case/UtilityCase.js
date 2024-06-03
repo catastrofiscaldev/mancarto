@@ -814,6 +814,11 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                     'Content-Type': 'application/json'
                 }
             }).then(function (response) {
+                if (!response.ok) {
+                    return response.json().then(function (errorData) {
+                        throw new Error("Se actualiz\xF3 la cartograf\xEDa, pero no se pudo actualizar el estado de la solicitud. Por favor, contacte al administrador de la plataforma.\nError: " + errorData.error);
+                    });
+                }
                 return response.json();
             }).then(function (data) {
                 return deferred.resolve(data);

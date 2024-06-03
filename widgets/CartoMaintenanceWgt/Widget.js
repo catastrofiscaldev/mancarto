@@ -1,4 +1,4 @@
-define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin', "esri/toolbars/draw", "esri/toolbars/edit", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", 'dojo/_base/Color', "esri/layers/GraphicsLayer", "esri/geometry/Point", "jimu/LayerInfos/LayerInfos", "dojo/_base/lang", "esri/layers/FeatureLayer", "esri/tasks/QueryTask", "esri/tasks/query", "jimu/WidgetManager", "esri/geometry/geometryEngine", "esri/geometry/Polyline", "esri/geometry/Polygon", "esri/geometry/webMercatorUtils", "esri/tasks/Geoprocessor", 'esri/dijit/util/busyIndicator', "jimu/dijit/Message", "https://unpkg.com/@turf/turf@6/turf.min.js", "https://unpkg.com/xlsx@0.17.2/dist/xlsx.full.min.js", "dojo/Deferred", "esri/symbols/TextSymbol", "esri/symbols/Font", './CaseInfo', "esri/tasks/StatisticDefinition", "esri/request", './case/Subdivision', './case/Acumulation', './case/Independence', './case/Deactivate', './components/LandAssignment', './components/LandProcess', './components/LandMatrix', './case/UtilityCase'], function (declare, BaseWidget, _WidgetsInTemplateMixin, Draw, Edit, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol, Color, GraphicsLayer, Point, LayerInfos, lang, FeatureLayer, QueryTask, Query, WidgetManager, geometryEngine, Polyline, Polygon, webMercatorUtils, Geoprocessor, BusyIndicator, Message, turf, XLSX, Deferred, TextSymbol, Font, CaseInfo, StatisticDefinition, esriRequest, SubDivision, Acumulation, Independence, Deactivate, LandAssignment, LandProcess, LandMatrix, UtilityCase) {
+define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin', "esri/toolbars/draw", "esri/toolbars/edit", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", 'dojo/_base/Color', "esri/layers/GraphicsLayer", "esri/geometry/Point", "jimu/LayerInfos/LayerInfos", "dojo/_base/lang", "esri/layers/FeatureLayer", "esri/tasks/QueryTask", "esri/tasks/query", "jimu/WidgetManager", "esri/geometry/geometryEngine", "esri/geometry/Polyline", "esri/geometry/Polygon", "esri/geometry/webMercatorUtils", "esri/tasks/Geoprocessor", 'esri/dijit/util/busyIndicator', "jimu/dijit/Message", "https://unpkg.com/@turf/turf@6/turf.min.js", "https://unpkg.com/xlsx@0.17.2/dist/xlsx.full.min.js", "dojo/Deferred", "esri/symbols/TextSymbol", "esri/symbols/Font", './CaseInfo', "esri/tasks/StatisticDefinition", "esri/request", './case/Subdivision', './case/Acumulation', './case/Independence', './case/Deactivate', './components/LandAssignment', './components/LandProcess', './case/UtilityCase', "esri/tasks/GeometryService"], function (declare, BaseWidget, _WidgetsInTemplateMixin, Draw, Edit, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol, Color, GraphicsLayer, Point, LayerInfos, lang, FeatureLayer, QueryTask, Query, WidgetManager, geometryEngine, Polyline, Polygon, webMercatorUtils, Geoprocessor, BusyIndicator, Message, turf, XLSX, Deferred, TextSymbol, Font, CaseInfo, StatisticDefinition, esriRequest, SubDivision, Acumulation, Independence, Deactivate, LandAssignment, LandProcess, UtilityCase, GeometryService) {
   var _slicedToArray = function () {
     function sliceIterator(arr, i) {
       var _arr = [];
@@ -207,6 +207,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       this.inherited(arguments);
       console.log('CartoMaintenanceWgt::postCreate');
       this._getAllLayers();
+      this.geometryService = new GeometryService(this.config.geometryServiceUrl);
       selfCm = this;
       this._filterByDistrictCm();
       this._startExtentByDistrictCm();
@@ -444,7 +445,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       // crear una consulta para seleccionar la fila deseada
       var query = new Query();
       // @cpu
-      query.where = _UBIGEO_FIELD + ' = \'' + paramsApp['ubigeo'] + '\' and ' + LandCls.codCpu + ' = \'' + cup + '\'';
+      query.where = _UBIGEO_FIELD + ' = \'' + paramsApp['ubigeo'] + '\' and ' + LandCls.codCpu + ' = \'' + cup + '\' and ' + LandCls.estado + ' = 1';
 
       // seleccionar la fila
       propertyLayer.selectFeatures(query, FeatureLayer.SELECTION_NEW).then(function (results) {
@@ -496,7 +497,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       var cpuOriginal = self.currentLandTabRows.map(function (i) {
         return i.cup;
       });
-      queryLands.where = UtilityCase.ubigeoFieldName + ' = \'' + paramsApp['ubigeo'] + '\' and ' + LandCls.codCpu + ' in (\'' + cpuOriginal.join("', '") + '\')';
+      queryLands.where = UtilityCase.ubigeoFieldName + ' = \'' + paramsApp['ubigeo'] + '\' and ' + LandCls.codCpu + ' in (\'' + cpuOriginal.join("', '") + '\') and ' + LandCls.estado + ' = 1';
       queryLands.returnGeometry = true;
       queryLands.outFields = ["*"];
       var urlLands = self.layersMap.getLayerInfoById(idLyrCfPredios).getUrl();
@@ -1367,6 +1368,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       dojo.query('.loteUrbanoDvCls').on('change', selfCm._editLoteUrbanoDivision);
     },
     _ordenarPoligonosNorteSur: function _ordenarPoligonosNorteSur(poligonos, idx, bodyTable) {
+      var deferred = new Deferred();
       // Obtener la coordenada más al norte de cada polígono
       var coordenadasNorte = poligonos.map(function (poligono) {
         var extent = poligono.getExtent();
@@ -1380,6 +1382,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         return coordenadaNorteB - coordenadaNorteA; // Ordenar de norte a sur
       });
 
+      // console.log(poligonos)
+
       var graphicLayerLabelCodLoteDivision = new GraphicsLayer({
         id: idGraphicLabelCodLote
       });
@@ -1388,46 +1392,34 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
       var dataLoteTable = [];
 
-      // Paso 5: Agregar número de polígono a propiedad "order"
-      poligonosOrdenados.forEach(function (poligono, index) {
-
-        var polygon = turf.polygon(poligono.rings);
-        var center = turf.pointOnFeature(polygon);
-
-        var pointLabel = new Point({
-          x: center.geometry.coordinates[0],
-          y: center.geometry.coordinates[1],
-          spatialReference: { wkid: 4326 }
+      selfCm.geometryService.labelPoints(poligonosOrdenados).then(function (labelPoints) {
+        labelPoints.forEach(function (point, index) {
+          var cod_lote = selfCm._zfill(idx + 1, 3);
+          var txtSym = new TextSymbol(cod_lote, font, new Color([250, 0, 0, 1]));
+          txtSym.setColor(new esri.Color([0, 0, 0, 1])); // color blanco
+          txtSym.setSize("12pt");
+          txtSym.setHaloColor(new esri.Color([255, 255, 255, 1]));
+          txtSym.setHaloSize(2);
+          var idGraphic = 'label_' + (index + 1);
+          var graphicLabel = new Graphic(point, txtSym, {
+            id: idGraphic,
+            lot_urb: selfCm.responseRequests[index].urbanLotNumber,
+            clase: 'labelCodLoteDivision'
+          });
+          graphicLayerLabelCodLoteDivision.add(graphicLabel);
+          dataLoteTable.push({ num: index + 1, id: idGraphic, cod_lote: cod_lote });
+          idx = idx + 1;
         });
-        var cod_lote = selfCm._zfill(idx + 1, 3);
-        var txtSym = new TextSymbol(cod_lote, font, new Color([250, 0, 0, 1]));
-        txtSym.setColor(new esri.Color([0, 0, 0, 1])); // color blanco
-        txtSym.setSize("12pt");
-        txtSym.setHaloColor(new esri.Color([255, 255, 255, 1]));
-        txtSym.setHaloSize(2);
-        var idGraphic = 'label_' + (index + 1);
-        var graphicLabel = new Graphic(pointLabel, txtSym, {
-          id: idGraphic,
-          lot_urb: selfCm.responseRequests[index].urbanLotNumber,
-          clase: 'labelCodLoteDivision'
-        });
-        graphicLayerLabelCodLoteDivision.add(graphicLabel);
-        dataLoteTable.push({ num: index + 1, id: idGraphic, cod_lote: cod_lote });
-        idx = idx + 1;
-        // editToolbar.activate(Edit.MOVE, graphicLabel, {allowAddVertices: false, allowDeleteVertices: false});
+        return dataLoteTable;
+      }).then(function (dataLoteTable) {
+        selfCm._buildDataLoteTable(bodyTable, dataLoteTable);
+        selfCm.map.addLayer(graphicLayerLabelCodLoteDivision);
+        return deferred.resolve(dataLoteTable);
+      }).catch(function (error) {
+        return deferred.reject(error);
       });
 
-      // Completar table
-      selfCm._buildDataLoteTable(bodyTable, dataLoteTable);
-      selfCm.map.addLayer(graphicLayerLabelCodLoteDivision);
-    },
-    _enableEditingLabelsLotesDivision: function _enableEditingLabelsLotesDivision(evt) {
-      if (evt && evt.graphic && evt.graphic.attributes && evt.graphic.attributes.clase == 'labelCodLoteDivision') {
-        selfCm.map.setInfoWindowOnClick(false);
-        selfCm.editToolbar.activate(Edit.MOVE, evt.graphic);
-      } else {
-        selfCm.editToolbar.deactivate();
-      }
+      return deferred.promise;
     },
     _zfill: function _zfill(num, len) {
       return (Array(len).fill('0').join('') + num).slice(-len);
@@ -1557,6 +1549,17 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       var graphicLayerLoteDivision = new GraphicsLayer({
         id: idGraphicLoteCm
       });
+
+      // // Configurar el LabelClass con un símbolo transparente
+      // const labelClass = new LabelClass({
+      //   labelExpressionInfo: { value: "-" },
+      //   useCodedValues: false,
+      //   labelPlacement: "always-horizontal",
+      //   symbol: new TextSymbol().setColor(new Color([0, 0, 0])) // Color transparente
+      // });
+
+      // console.log(graphicLayerLoteDivision);
+      // graphicLayerLoteDivision.setLabelingInfo([labelClass]);
 
       // iterar sobre los graficos de la capa de division y agregar cada uno a graphicLayerLoteDivision
       var _iteratorNormalCompletion5 = true;
@@ -1784,7 +1787,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         var geomLoteDivided = selfCm._divideLotsByLines();
         return selfCm._getMaxCodLot(geomLoteDivided);
       }).then(function (proprsLot) {
-        selfCm._ordenarPoligonosNorteSur(proprsLot.polygons, parseInt(proprsLot.maxCodLote), selfCm.bodyTbDatosLoteDvApCm);
+        return selfCm._ordenarPoligonosNorteSur(proprsLot.polygons, parseInt(proprsLot.maxCodLote), selfCm.bodyTbDatosLoteDvApCm);
+      }).then(function () {
         selfCm.map.reorderLayer(selfCm.map.getLayer(idGraphicLoteCm), selfCm.map.graphicsLayerIds.indexOf(graphicLayerLabelLineaDivision.id));
         selfCm.map.setExtent(selfCm.currentLotsRows[0].geometry.getExtent().expand(1.5), true);
         return selfCm._addGraphicsPointLotsAndArancel();
@@ -1890,7 +1894,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           }).catch(function (error) {
             console.log(error);
             selfCm._removeWarningMessageExecute();
-            selfCm._showMessage(error, type = "error");
+            selfCm._showMessage(error.message, type = "error");
             selfCm.busyIndicator.hide();
           });
         } else {
@@ -2011,7 +2015,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           }).catch(function (error) {
             // console.log(error)
             selfCm._removeWarningMessageExecute();
-            selfCm._showMessage(error, type = "error");
+            selfCm._showMessage(error.message, type = "error");
             selfCm.busyIndicator.hide();
           });
         } else {
@@ -2020,6 +2024,11 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       });
     },
     _executeInactivarGpService: function _executeInactivarGpService(evt) {
+      if (!selfCm.currentLotsRows) {
+        selfCm._showMessage(selfCm.nls.emptyLotRequests, type = "error");
+        return;
+      }
+
       selfCm._showMessageConfirm().then(function (result) {
         if (result) {
           selfCm.busyIndicator.show();
@@ -2043,7 +2052,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             selfCm._showMessage(selfCm.nls.successProcess, type = "success");
           }).catch(function (error) {
             selfCm._removeWarningMessageExecute();
-            selfCm._showMessage(error, type = "error");
+            selfCm._showMessage(error.message, type = "error");
             selfCm.busyIndicator.hide();
           });
         } else {
@@ -2102,7 +2111,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             selfCm._showMessage(selfCm.nls.successProcess, type = "success");
           }).catch(function (error) {
             selfCm._removeWarningMessageExecute();
-            selfCm._showMessage(error, type = "error");
+            selfCm._showMessage(error.message, type = "error");
             selfCm.busyIndicator.hide();
           });
         } else {
@@ -2356,7 +2365,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       var columnOrder = evt.currentTarget.dataset.val;
       evt.currentTarget.dataset.val = columnOrder.includes('-') ? columnOrder.replace('-', '') : '-' + columnOrder;
       selfCm.queryRequests['ordering'] = evt.currentTarget.dataset.val;
-      dojo.query(".tablinksCm.active")[0].click();
+      selfCm._loadRequestsCm();
+      // dojo.query(".tablinksCm.active")[0].click();
     },
     onOpen: function onOpen() {
       console.log('CartoMaintenanceWgt::onOpen');
@@ -2399,7 +2409,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm.map.addLayer(graphicLayerLabelLineaDivision);
       // selfCm.map.addLayer(graphicLayerLandsByIndependence)
       selfCm.editToolbar = new Edit(selfCm.map);
-      selfCm.map.on("click", selfCm._enableEditingLabelsLotesDivision);
+      // selfCm.map.on("click", selfCm._enableEditingLabelsLotesDivision);
       selfCm.editToolbar.on("deactivate", function (evt) {
         if (evt.info.isModified) {
           selfCm.map.setInfoWindowOnClick(true);
