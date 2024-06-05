@@ -151,9 +151,12 @@ define(["esri/graphic", "esri/geometry/Circle", "esri/geometry/Point"], function
             return htmlObject;
         },
         renderTableLandAssignment: function renderTableLandAssignment() {
-            var pointLotsHtml = this.pointLots.map(function (pointLot, idx) {
-                return "<option data-id=" + pointLot.attributes.ID_LOTE + ">\n                            " + pointLot.attributes.NOM_VIA + "\n                        </option>";
-            });
+            var pointLotsHtml = [];
+            if (this.pointLots) {
+                pointLotsHtml = this.pointLots.map(function (pointLot, idx) {
+                    return "<option data-id=" + pointLot.attributes.ID_LOTE + ">\n                                " + pointLot.attributes.NOM_VIA + "\n                            </option>";
+                });
+            }
 
             var landsHtml = this.lands.map(function (land, idx) {
                 return "<tr data-id=" + land.id + " data-cpm=" + land.cpm + ">\n                            <td>" + (idx + 1) + "</td>\n                            <td>" + land.address + "</td>\n                            <td>\n                                <select class=\"pointLotSelectionCm\">\n                                    <option value=\"\" disabled selected>\n                                        ---\n                                    </option>\n                                    " + pointLotsHtml.join('') + "\n                                </select>\n                            </td>\n                        </tr>";

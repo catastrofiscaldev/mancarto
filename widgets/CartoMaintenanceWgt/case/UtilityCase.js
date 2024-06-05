@@ -774,13 +774,17 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return deferred.promise;
         },
         updateStatusRequests: function updateStatusRequests(lands, codRequests, caseRequest, ubigeo, config) {
+            var idLandInactive = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : [];
+
             var deferred = new Deferred();
             var responseLands = UtilityCase.matchWithReceptionModel(lands);
+            var messageText = "Se actualiz\xF3 la cartograf\xEDa, pero no se pudo actualizar el estado de la solicitud. Por favor, contacte al administrador de la plataforma.";
 
             var response = {
                 id: codRequests,
                 results: responseLands,
-                idType: parseInt(caseRequest)
+                idType: parseInt(caseRequest),
+                idLandInactive: idLandInactive
             };
             var _iteratorNormalCompletion4 = true;
             var _didIteratorError4 = false;
@@ -816,7 +820,9 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             }).then(function (response) {
                 if (!response.ok) {
                     return response.json().then(function (errorData) {
-                        throw new Error("Se actualiz\xF3 la cartograf\xEDa, pero no se pudo actualizar el estado de la solicitud. Por favor, contacte al administrador de la plataforma.\nError: " + errorData.error);
+                        throw new Error(messageText + ".\nError: " + errorData.error);
+                    }).catch(function () {
+                        throw new Error(messageText);
                     });
                 }
                 return response.json();

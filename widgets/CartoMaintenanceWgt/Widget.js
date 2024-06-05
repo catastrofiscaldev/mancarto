@@ -324,7 +324,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       });
 
       return fetch(url).then(function (response) {
-        if (!response) {
+        if (!response.ok) {
           selfCm.busyIndicator.hide();
           throw new Error("HTTP error " + response.status);
         }
@@ -452,6 +452,11 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         if (results.length == 0) {
           throw new Error(selfCm.nls.emptyLandSelected);
         }
+        // if (selfCm.case == 2) {
+        //   if (results.length < 2) {
+        //     throw new Error(selfCm.nls.errorAcumulationLandsNumber);
+        //   }
+        // }
         selfCm._handleFeatureSelected(results);
         selfCm.busyIndicator.hide();
         return deferred.resolve(results);
@@ -568,9 +573,12 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       var deferred = new Deferred();
       var urlOriginal = self.config.landsByApplicationUrl + '/' + idSolicitud;
       fetch(urlOriginal).then(function (response) {
+        if (!response.ok) {
+          throw new Error("HTTP error " + response.status);
+        }
         return response.json();
       }).then(function (response) {
-        if (response.length == 0) {
+        if (response.count == 0) {
           throw new Error(self.nls.errorGetLand);
         }
         self.currentLandTabRows = response.results;
@@ -600,6 +608,11 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       if (!this.currentLotsRows) {
         return;
       }
+      if (this.case == 2) {
+        if (this.currentLotsRows.length < 2) {
+          throw new Error(this.nls.errorAcumulationLandsNumber);
+        }
+      }
       var unionPredios = this._unionFeatures(this.currentLotsRows.map(function (i) {
         return i.geometry;
       }));
@@ -620,6 +633,10 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       Promise.all([
       // fetch(urlOriginal).then(response => response.json()),
       selfCm._getOriginalData(selfCm.codRequestsCm), fetch(urlResults).then(function (response) {
+        if (!response.ok) {
+          selfCm.busyIndicator.hide();
+          throw new Error("HTTP error " + response.status);
+        }
         return response.json();
       }), fetch(urlDocSupport).then(function (response) {
         return response.json();
@@ -640,7 +657,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         });
 
         if (selfCm.case != 4) {
-          if (responseResults.results.length == 0) {
+
+          if (responseResults.count == 0) {
             selfCm._showMessage(selfCm.nls.empyLandResultsRequests + ' ' + selfCm.codRequestsCm, type = "error");
             selfCm.busyIndicator.hide();
             // return
@@ -1471,6 +1489,13 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
       esriRequest(requestOptions, { usePost: true }).then(function (response) {
         selfCm.currentLotsRows = response.features;
+
+        if (selfCm.case == 2) {
+          if (selfCm.currentLotsRows.length < 2) {
+            throw new Error(selfCm.nls.errorAcumulationLandsNumber);
+          }
+        }
+
         selfCm.currentLotsRows.forEach(function (row) {
           row.geometry = new Polygon({
             rings: row.geometry.rings,
@@ -1896,6 +1921,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             selfCm._removeWarningMessageExecute();
             selfCm._showMessage(error.message, type = "error");
             selfCm.busyIndicator.hide();
+          }).finally(function () {
+            selfCm.lotesQuery = null;
           });
         } else {
           selfCm.busyIndicator.hide();
@@ -2017,6 +2044,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             selfCm._removeWarningMessageExecute();
             selfCm._showMessage(error.message, type = "error");
             selfCm.busyIndicator.hide();
+          }).finally(function () {
+            selfCm.lotesQuery = null;
           });
         } else {
           return;
@@ -2054,6 +2083,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             selfCm._removeWarningMessageExecute();
             selfCm._showMessage(error.message, type = "error");
             selfCm.busyIndicator.hide();
+          }).finally(function () {
+            selfCm.currentLotsRows = null;
           });
         } else {
           return;
@@ -2082,6 +2113,10 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       dojo.query("#loadingTextCustom")[0].remove();
     },
     _executeIndependenceLands: function _executeIndependenceLands(evt) {
+      if (!selfCm.currentLotsRows) {
+        selfCm._showMessage(selfCm.nls.emptyLotRequests, type = "error");
+        return;
+      }
       if (!LandAssignment.checkPointLotsSelected()) {
         selfCm._showMessage(selfCm.nls.emptyWaySelectedIndependence, type = "error");
         return;
@@ -2113,6 +2148,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             selfCm._removeWarningMessageExecute();
             selfCm._showMessage(error.message, type = "error");
             selfCm.busyIndicator.hide();
+          }).finally(function () {
+            selfCm.currentLotsRows = null;
           });
         } else {
           return;

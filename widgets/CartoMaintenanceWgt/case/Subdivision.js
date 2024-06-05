@@ -64,13 +64,16 @@ define(["./UtilityCase"], function (UtilityCase) {
             }).then(function (results) {
                 _this.currentPoinLotsRows = results[0].features;
                 _this.currentLandsRows = results[1].features;
+                _this.idLandInactive = results[1].features.map(function (i) {
+                    return i.attributes.COD_CPU;
+                });
                 return UtilityCase.sendDataOriginToHistoric(_this.config, _this.currentLotsRows, _this.currentPoinLotsRows, _this.currentLandsRows);
             }).then(function (results) {
                 return UtilityCase.deleteDataOrigin(_this.currentLotsRows, _this.currentPoinLotsRows, _this.currentLandsRows, _this.config);
             }).then(function (results) {
                 return UtilityCase.addDataNew(_this.lots, _this.pointLots, _this.lands, _this.config);
             }).then(function (results) {
-                return UtilityCase.updateStatusRequests(_this.lands, _this.codRequests, _this.caseRequest, _this.ubigeo, _this.config);
+                return UtilityCase.updateStatusRequests(_this.lands, _this.codRequests, _this.caseRequest, _this.ubigeo, _this.config, idLandInactive = _this.idLandInactive);
             }).catch(function (err) {
                 throw err;
             });
