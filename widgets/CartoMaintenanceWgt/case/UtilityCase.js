@@ -188,7 +188,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             var queryTaskBlock = new QueryTask(url);
             queryTaskBlock.execute(queryBlock).then(function (response) {
                 if (response.features.length === 0) {
-                    return deferred.reject("No se encontraron manzanas");
+                    return deferred.reject(new Error("No se encontraron manzanas"));
                 }
                 return deferred.resolve(response.features[0]);
             }).catch(function (err) {
@@ -216,7 +216,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                     return lots.includes(lot);
                 });
                 if (exist) {
-                    return deferred.reject("Los lotes urbanos registrados ya se encuentran en la manzana actual");
+                    return deferred.reject(new Error("Los lotes urbanos registrados ya se encuentran en la manzana actual"));
                 }
                 return deferred.resolve(block);
             }).catch(function (err) {

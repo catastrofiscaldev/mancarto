@@ -1921,9 +1921,10 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             selfCm._removeWarningMessageExecute();
             selfCm._showMessage(error.message, type = "error");
             selfCm.busyIndicator.hide();
-          }).finally(function () {
-            selfCm.lotesQuery = null;
           });
+          // .finally(() => {
+          //   selfCm.lotesQuery = null;
+          // })
         } else {
           selfCm.busyIndicator.hide();
           return;
