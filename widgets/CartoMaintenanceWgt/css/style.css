@@ -771,6 +771,14 @@ input[type='file'] {
   display: block;
 }
 
+.lblAffectedClsCm {
+  display: none;
+}
+
+.lblAffectedClsCm.active {
+  display: block;
+}
+
 
 .otherAttributtesCtnClsCm {
   width: 100%;

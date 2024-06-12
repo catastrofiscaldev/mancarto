@@ -8,6 +8,7 @@
   "observationUrl": "https://vmd120205.contaboserver.net/api/v1/maintenance/observation/",
   "resultsByApplication": "https://vmd120205.contaboserver.net/api/v1/maintenance/result/results-by-application",
   "updateStatusApplication": "https://vmd120205.contaboserver.net/api/v1/maintenance/application/update-application-attended/",
+  "affectedLands": "https://vmd120205.contaboserver.net/api/v1/maintenance/land/lands-affected-by-application",
   "lotHistoricUrl": "https://ws.mineco.gob.pe/serverdf/rest/services/pruebas/CARTO_FISCAL_H/FeatureServer/2",
   "pointLotHistoricUrl": "https://ws.mineco.gob.pe/serverdf/rest/services/pruebas/CARTO_FISCAL_H/FeatureServer/1",
   "landHistoricUrl": "https://ws.mineco.gob.pe/serverdf/rest/services/pruebas/CARTO_FISCAL_H/FeatureServer/0",

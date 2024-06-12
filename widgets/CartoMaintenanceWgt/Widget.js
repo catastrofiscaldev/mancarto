@@ -600,7 +600,10 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       }).then(function (idLots) {
         return idLots;
       }).catch(function (error) {
-        selfCm._showMessage(error.message, type = "error");
+        return error;
+        // 
+        // throw error;
+        // selfCm._showMessage(error.message, type = "error");
         // throw error;
       });
     },
@@ -626,13 +629,11 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _requestCaseInfo: function _requestCaseInfo() {
       selfCm.busyIndicator.show();
-      // const urlOriginal = `${selfCm.config.landsByApplicationUrl}/${idSolicitud}`
       var urlResults = selfCm.config.resultsByApplication + '/' + selfCm.codRequestsCm;
       var urlDocSupport = selfCm.config.applicationListUrl + '/' + selfCm.codRequestsCm;
+      var urlAffectedLands = selfCm.config.affectedLands + '/' + selfCm.codRequestsCm;
 
-      Promise.all([
-      // fetch(urlOriginal).then(response => response.json()),
-      selfCm._getOriginalData(selfCm.codRequestsCm), fetch(urlResults).then(function (response) {
+      Promise.all([selfCm._getOriginalData(selfCm.codRequestsCm), fetch(urlResults).then(function (response) {
         if (!response.ok) {
           selfCm.busyIndicator.hide();
           throw new Error("HTTP error " + response.status);
@@ -640,15 +641,22 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         return response.json();
       }), fetch(urlDocSupport).then(function (response) {
         return response.json();
+      }), fetch(urlAffectedLands).then(function (response) {
+        if (!response.ok) {
+          selfCm.busyIndicator.hide();
+          throw new Error("HTTP error " + response.status);
+        }
+        return response.json();
       })]).then(function (_ref) {
-        var _ref2 = _slicedToArray(_ref, 3),
+        var _ref2 = _slicedToArray(_ref, 4),
             _ = _ref2[0],
             responseResults = _ref2[1],
-            responseDocSupport = _ref2[2];
+            responseDocSupport = _ref2[2],
+            responseAffectedLands = _ref2[3];
 
-        if (!_) {
+        if (_.message) {
           selfCm.busyIndicator.hide();
-          selfCm._showMessage(selfCm.nls.empyLandResultsRequests, type = "error");
+          selfCm._showMessage(_.message, type = "error");
           // return
         }
 
@@ -667,6 +675,20 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
         dojo.query("#showInfoDocCm")[0].value = responseDocSupport.support;
         dojo.query('.CtnOriginalClsCm')[0].innerHTML = rows.join('');
+
+        if (selfCm.case == 2 || selfCm.case == 3) {
+          if (responseAffectedLands.results.length > 0) {
+            var rowsAffected = responseAffectedLands.results.map(function (i, idx) {
+              return CaseInfo.contentCard(i, 'original', i.cup, active = false);
+            });
+            dojo.query('.CtnAffectedClsCm')[0].innerHTML = rowsAffected.join('');
+            dojo.query('.lblAffectedClsCm').addClass('active');
+          }
+        } else {
+          dojo.query('.CtnAffectedClsCm')[0].innerHTML = '';
+          dojo.query('.lblAffectedClsCm').removeClass('active');
+        }
+
         dojo.query(".zoomPredInfoClsCm").on('click', selfCm._zoomToPredSelectedEvt);
 
         if (selfCm.case != 4) {

@@ -57,7 +57,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             this.secEjec = 'SEC_EJEC';
         },
         receptionModelRequest: function receptionModelRequest() {
-            return ["COD_PRE", "COD_CPU", "COD_SECT", "COD_MZN", "COD_LOTE", "COD_UU", "COD_VIA", "TIPO_UU", "NOM_UU", "NOM_REF", "MZN_URB", "LOT_URB", "TIP_VIA", "NOM_VIA", "CUADRA", "LADO", "DIR_MUN", "DIR_URB", "COORD_X", "COORD_Y", "RAN_CPU", "COD_UI", "COD_VER", "ID"];
+            return ["COD_PRE", "COD_CPU", "COD_SECT", "COD_MZN", "COD_LOTE", "COD_UU", "COD_VIA", "TIPO_UU", "NOM_UU", "NOM_REF", "MZN_URB", "LOT_URB", "TIP_VIA", "NOM_VIA", "CUADRA", "LADO", "DIR_MUN", "DIR_URB", "COORD_X", "COORD_Y", "RAN_CPU", "COD_UI", "COD_VER", "ID_LOTE_P", "ID"];
         },
         matchWithReceptionModel: function matchWithReceptionModel(object) {
             var modelRequests = this.receptionModelRequest();
@@ -687,12 +687,6 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                 var landsHistoricRequestOptions = this.setParametersToAddFeatures(config.landHistoricUrl, currentLandsRows);
                 promises.push(esriRequest(landsHistoricRequestOptions, { usePost: true }));
             }
-
-            // const promises = [
-            //     esriRequest(lotsHistoricRequestOptions, { usePost: true }),
-            //     esriRequest(pointsLotsHistoricRequestOptions, { usePost: true }),
-            //     esriRequest(landsHistoricRequestOptions, { usePost: true })
-            // ]
 
             all(promises).then(function (results) {
                 return deferred.resolve(results);
