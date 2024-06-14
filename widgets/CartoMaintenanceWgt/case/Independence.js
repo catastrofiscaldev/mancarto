@@ -103,6 +103,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/reque
 
                     landProps.attributes[LandCls.dirMun] = UtilityCase.generateDirMun(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
                     landProps.attributes[LandCls.dirUrb] = UtilityCase.generateDirUrb(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
+                    landProps.attributes[LotCls.anoCart] = new Date().getFullYear();
                     landProps.geometry = land.pointLot.geometry;
                     landProps.attributes['ID'] = land.id;
 

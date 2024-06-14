@@ -660,12 +660,12 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           // return
         }
 
+        selfCm.currentLandTabRows = selfCm.currentLandTabRows || [];
         var rows = selfCm.currentLandTabRows.map(function (i, idx) {
           return CaseInfo.contentCard(i, 'original', i.cup, active = selfCm.case != 2 ? true : false);
         });
 
         if (selfCm.case != 4) {
-
           if (responseResults.count == 0) {
             selfCm._showMessage(selfCm.nls.empyLandResultsRequests + ' ' + selfCm.codRequestsCm, type = "error");
             selfCm.busyIndicator.hide();
@@ -796,12 +796,16 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         selfCm.lotesQuery = null;
         selfCm.arancel = null;
         selfCm.xy = [];
+        selfCm.currentLandTabRows = null;
 
         selfCm.casesCtnApCm.classList.remove('active');
         selfCm.resultCtnApCm.classList.remove('active');
         selfCm.obsCtnApCm.classList.remove('active');
         selfCm.requestTrayApCm.classList.toggle('active');
         selfCm._removeClassActiveButton();
+        dojo.query('.CtnAffectedClsCm')[0].innerHTML = '';
+        dojo.query('.lblAffectedClsCm').removeClass('active');
+
         if (selfCm.currentTabActive == requestToAttendState) {
           dojo.query(".tablinksCm.active")[0].click();
           // selfCm._loadRequestTabActiveCm()
@@ -1893,9 +1897,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       var labelCodLotesLayer = selfCm.map.getLayer(idGraphicLabelCodLote);
 
       selfCm._showMessageConfirm().then(function (result) {
-        selfCm.busyIndicator.show();
-        selfCm._addWarningMessageExecute();
         if (result) {
+          selfCm.busyIndicator.show();
+          selfCm._addWarningMessageExecute();
           var labelCodLotesLayerGraphic = labelCodLotesLayer.graphics;
 
           Acumulation.codRequests = selfCm.codRequestsCm;
@@ -2356,6 +2360,12 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     _sendObservation: function _sendObservation(evt) {
       selfCm.busyIndicator.show();
       var file = selfCm.imgUploadApCm.files[0];
+      var messageObservation = selfCm.textAreaObsApCm.value.trim();
+      if (messageObservation == '') {
+        selfCm.busyIndicator.hide();
+        selfCm._showMessage(selfCm.nls.emptyObservation, type = "error");
+        return;
+      }
       if (file == undefined) {
         selfCm.busyIndicator.hide();
         selfCm._showMessage(selfCm.nls.emptyImageSupport, type = "error");

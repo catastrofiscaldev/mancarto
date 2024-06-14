@@ -61,6 +61,7 @@ define({
     emptyLineSubdivision: "No se ha dibujado ninguna linea de division",
     resultDeactivate: "Esta operación ha sido completada con éxito. El predio seleccionado está inactivo, por lo que su visualización no está disponible.",
     errorAcumulationLandsNumber: "Uno de los predios no se encuentra en la cartografía actual. Por favor, verifica los datos proporcionado en la solicitud. Si los datos son correctos, recomendamos contactar al administrador del sistema",
+    emptyObservation: "Debe especificar una observación",
   }
 
   // add supported locales below:
