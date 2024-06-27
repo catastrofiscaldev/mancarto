@@ -203,6 +203,10 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     currentLotsRows: null,
     currentLandRows: null,
     currentPoinLotsRows: null,
+
+    resolutionType: null,
+    resolutionDocument: null,
+    floor: null,
     postCreate: function postCreate() {
       this.inherited(arguments);
       console.log('CartoMaintenanceWgt::postCreate');
@@ -891,7 +895,10 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             } else if (selfCm.case == 3) {
               graphic['attributes'] = {
                 cpm: selfCm.cpmPredioDivision,
-                id: selfCm.idPredioDivision
+                id: selfCm.idPredioDivision,
+                resolutionType: selfCm.resolutionType,
+                resolutionDocument: selfCm.resolutionDocument,
+                floor: selfCm.floor
               };
               graphicLayerPredioByDivison.add(graphic);
             }
@@ -942,6 +949,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm._removeClassActiveButton();
       selfCm.idButtonDrawActive = evt.currentTarget.id;
       selfCm.cpmAcumulacion = evt.currentTarget.dataset.cpm === 'null' ? null : evt.currentTarget.dataset.cpm;
+      selfCm.resolutionType = evt.currentTarget.dataset.resolutiontype === 'null' ? null : evt.currentTarget.dataset.resolutiontype;
+      selfCm.resolutionDocument = evt.currentTarget.dataset.resolutiondocument === 'null' ? null : evt.currentTarget.dataset.resolutiondocument;
+      selfCm.floor = evt.currentTarget.dataset.floor === 'null' ? null : evt.currentTarget.dataset.floor;
       selfCm.idAcumulacion = evt.currentTarget.parentElement.parentElement.id.split('_')[1];
       dojo.query('#' + selfCm.idButtonDrawActive)[0].classList.add('activeButton');
       selfCm.map.setInfoWindowOnClick(false);
@@ -1248,7 +1258,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm.responseRequests.forEach(function (predio, idx) {
         var tr = dojo.create('tr');
         tr.id = 'predio_' + predio['id'];
-        var row = '<td class="center-aligned">' + (idx + 1) + '</td>\n                  <td>' + predio['address'] + '</td>\n                  <td class="center-aligned">\n                   <span id="' + tr.id + '_draw" data-cpm=' + predio['cpm'] + '><i class="fas fa-map-marker-alt"></i></span>\n                  </td>';
+        var row = '<td class="center-aligned">' + (idx + 1) + '</td>\n                  <td>' + predio['address'] + '</td>\n                  <td class="center-aligned">\n                   <span \n                    id="' + tr.id + '_draw"\n                    data-cpm=' + predio['cpm'] + ' \n                    data-resolutionType=' + predio['resolutionType'] + ' \n                    data-resolutionDocument=' + predio['resolutionDocument'] + '\n                    data-floor=' + predio['floor'] + '\n                   >\n                      <i class="fas fa-map-marker-alt"></i>\n                   </span>\n                  </td>';
         tr.innerHTML = row;
         tr.style.cursor = "pointer";
         bodyTable.appendChild(tr);
@@ -1276,6 +1286,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       dojo.query('#' + selfCm.idButtonDrawActive)[0].classList.add('activeButton');
       selfCm.cpmPredioDivision = evt.currentTarget.dataset.cpm === 'null' ? null : evt.currentTarget.dataset.cpm;
       selfCm.idPredioDivision = evt.currentTarget.parentElement.parentElement.id;
+      selfCm.resolutionType = evt.currentTarget.dataset.resolutiontype === 'null' ? null : evt.currentTarget.dataset.resolutiontype;
+      selfCm.resolutionDocument = evt.currentTarget.dataset.resolutiondocument === 'null' ? null : evt.currentTarget.dataset.resolutiondocument;
+      selfCm.floor = evt.currentTarget.dataset.floor === 'null' ? null : evt.currentTarget.dataset.floor;
       var graphic = graphicLayerPredioByDivison.graphics.filter(function (item) {
         return item.attributes.id === selfCm.idPredioDivision;
       });
@@ -1852,33 +1865,6 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         selfCm._showMessage(error.message, type = "error");
       });
     },
-    _executeReasignacionGpService: function _executeReasignacionGpService(evt) {
-      if (!selfCm.xy.length) {
-        selfCm._showMessage(selfCm.nls.emptyNewLocation, type = "error");
-        return;
-      }
-      selfCm._showMessageConfirm().then(function (result) {
-        if (result) {
-          var _params = {
-            "cod_pred": selfCm.uniqueCodeLands,
-            "ubigeo": paramsApp['ubigeo'],
-            "geometry": selfCm.xy,
-            "user": paramsApp['username'],
-            "id_solicitud": selfCm.codRequestsCm
-
-            // revisar si alguna propiedad tiene valor nulo o indefinido
-          };for (var key in _params) {
-            if (_params[key] == null || _params[key] == undefined) {
-              selfCm._showMessage('Debe especificar el valor de ' + key, type = "error");
-              return;
-            }
-          }
-          selfCm._executeGPService(selfCm.config.reasignacionUrl, _params);
-        } else {
-          return;
-        }
-      });
-    },
     _executeAcumulacionGpService: function _executeAcumulacionGpService(evt) {
       if (!selfCm.lotesQuery) {
         selfCm._showMessage(selfCm.nls.errorGetLand, 'warning');
@@ -1917,6 +1903,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           Acumulation.newLandsGraphics = selfCm.map.getLayer(idGraphicPredioCm).graphics;
           Acumulation.newLandsGraphics[0]['codPre'] = selfCm.cpmAcumulacion;
           Acumulation.newLandsGraphics[0]['id'] = selfCm.idAcumulacion;
+          Acumulation.newLandsGraphics[0]['resolutionType'] = selfCm.resolutionType;
+          Acumulation.newLandsGraphics[0]['resolutionDocument'] = selfCm.resolutionDocument;
+          Acumulation.newLandsGraphics[0]['floor'] = selfCm.floor;
           Acumulation.landUrl = selfCm.layersMap.getLayerInfoById(idLyrCfPredios).getUrl();
           Acumulation.pointLotUrl = selfCm.layersMap.getLayerInfoById(idLyrCfLotesPun).getUrl();
           Acumulation.lotUrl = selfCm.layersMap.getLayerInfoById(idLyrCfLotes).getUrl();
@@ -2034,7 +2023,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           SubDivision.newLandsGraphics = graphicLayerPredioByDivison.graphics;
           SubDivision.queryBlock = selfCm.arancel;
           SubDivision.newLandsGraphics.forEach(function (i) {
-            i['id'] = i.attributes.id.split('_')[1], i['codPre'] = i.attributes.cpm;
+            i['id'] = i.attributes.id.split('_')[1], i['codPre'] = i.attributes.cpm, i['resolutionType'] = i.attributes.resolutionType, i['resolutionDocument'] = i.attributes.resolutionDocument, i['floor'] = i.attributes.floor;
           });
           SubDivision.lotGraphic = layerLote.graphics;
 
@@ -2461,7 +2450,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       dojo.query("#btnDrawLinesDvCm").on('click', this._activateToolLinesDivision);
       dojo.query("#btnApplyDvCm").on('click', this._ApplyDivideLotesRefactor);
       dojo.query("#titleCaseCm").on('click', this._zoomHomeRequests);
-      dojo.query("#sendDataRsCm").on('click', this._executeReasignacionGpService);
+      // dojo.query("#sendDataRsCm").on('click', this._executeReasignacionGpService)
       dojo.query('#sendDataFsCm').on('click', this._executeAcumulacionGpService);
       dojo.query('#sendDataDvCm').on('click', this._executeSubdivisionGpService);
       dojo.query('#sendDataDtCm').on('click', this._executeInactivarGpService);
