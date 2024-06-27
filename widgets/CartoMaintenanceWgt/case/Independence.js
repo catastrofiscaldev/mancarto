@@ -104,6 +104,12 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/reque
                     landProps.attributes[LandCls.dirMun] = UtilityCase.generateDirMun(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
                     landProps.attributes[LandCls.dirUrb] = UtilityCase.generateDirUrb(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
                     landProps.attributes[LotCls.anoCart] = new Date().getFullYear();
+                    if (land.resolutionType === UtilityCase.tipoResolucionValue) {
+                        landProps.attributes[LandCls.partida] = land.resolutionDocument;
+                        landProps.attributes[LandCls.estadoPartida] = UtilityCase.estadoPartidaValue;
+                    }
+                    // if (landGraphic.attributes.floor){
+                    landProps.attributes[LandCls.piso] = land.floor;
                     landProps.geometry = land.pointLot.geometry;
                     landProps.attributes['ID'] = land.id;
 

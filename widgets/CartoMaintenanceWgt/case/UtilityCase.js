@@ -11,6 +11,8 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
         estadoInsValue: 1,
         estadoValue: 1,
         codUiValue: 1,
+        estadoPartidaValue: 0,
+        tipoResolucionValue: "1",
 
         Land: function Land() {
             this.ubigeo = 'UBIGEO';
@@ -30,6 +32,9 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             this.idMznC = 'ID_MZN_C';
             this.idPred = 'ID_PRED';
             this.tipPred = 'TIP_PRED';
+            this.partida = 'PARTIDA';
+            this.estadoPartida = 'ESTADO_PARTIDA';
+            this.piso = 'PISO';
         },
         PointLot: function PointLot() {
             this.ubigeo = 'UBIGEO';
@@ -511,7 +516,15 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                             landProps.attributes[LandCls.codCpu] = _this6.generateCodCpu(landProps.attributes[LandCls.ranCpu], landProps.attributes[LandCls.codVer]);
                             landProps.attributes[LandCls.dirMun] = _this6.generateDirMun(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
                             landProps.attributes[LandCls.dirUrb] = _this6.generateDirUrb(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
+
                             landProps.geometry = landGraphic.geometry;
+                            if (landGraphic.resolutionType === _this6.tipoResolucionValue) {
+                                landProps.attributes[LandCls.partida] = landGraphic.resolutionDocument;
+                                landProps.attributes[LandCls.estadoPartida] = _this6.estadoPartidaValue;
+                            }
+                            // if (landGraphic.attributes.floor){
+                            landProps.attributes[LandCls.piso] = landGraphic.floor;
+                            // }
                             landProps.attributes['ID'] = parseInt(landGraphic.id);
                             lands.push(landProps.clone());
                             break;
@@ -767,6 +780,47 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             });
             return deferred.promise;
         },
+
+
+        // updateStatusRequests(lands, codRequests, caseRequest, ubigeo, config, idLandInactive = []) {
+        //     const deferred = new Deferred();
+        //     const responseLands = UtilityCase.matchWithReceptionModel(lands)
+        //     const messageText = `Se actualizó la cartografía, pero no se pudo actualizar el estado de la solicitud. Por favor, contacte al administrador de la plataforma.`;
+
+        //     const response = {
+        //         id: codRequests,
+        //         results: responseLands,
+        //         idType: parseInt(caseRequest),
+        //         idLandInactive: idLandInactive
+        //     }
+        //     for (let predio of response.results) {
+        //         predio['ubigeo'] = ubigeo;
+        //     }
+
+        //     fetch(config.updateStatusApplication, {
+        //         method: 'POST',
+        //         body: JSON.stringify(response),
+        //         headers: {
+        //             'Content-Type': 'application/json'
+        //         }
+        //     })
+        //         .then(response => {
+        //             if (!response.ok) {
+        //                 return response.json()
+        //                     .then(errorData => {
+        //                         throw new Error(`${messageText}.\nError: ${errorData.error}`);
+        //                     })
+        //                     .catch(() => {
+        //                         throw new Error(messageText);
+        //                     });
+        //             }
+        //             return response.json();
+        //         })
+        //         .then(data => deferred.resolve(data))
+        //         .catch(err => deferred.reject(err));
+        //     return deferred.promise;
+        // },
+
         updateStatusRequests: function updateStatusRequests(lands, codRequests, caseRequest, ubigeo, config) {
             var idLandInactive = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : [];
 
@@ -805,26 +859,38 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                 }
             }
 
-            fetch(config.updateStatusApplication, {
-                method: 'POST',
-                body: JSON.stringify(response),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            }).then(function (response) {
-                if (!response.ok) {
-                    return response.json().then(function (errorData) {
-                        throw new Error(messageText + ".\nError: " + errorData.error);
-                    }).catch(function () {
-                        throw new Error(messageText);
-                    });
-                }
-                return response.json();
-            }).then(function (data) {
-                return deferred.resolve(data);
-            }).catch(function (err) {
-                return deferred.reject(err);
-            });
+            var fetchUpdateStatus = function fetchUpdateStatus() {
+                var retry = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+                fetch(config.updateStatusApplication, {
+                    method: 'POST',
+                    body: JSON.stringify(response),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(function (response) {
+                    if (!response.ok) {
+                        return response.json().then(function (errorData) {
+                            throw new Error(messageText + ".\nError: " + errorData.error);
+                        }).catch(function () {
+                            throw new Error(messageText);
+                        });
+                    }
+                    return response.json();
+                }).then(function (data) {
+                    return deferred.resolve(data);
+                }).catch(function (err) {
+                    if (!retry) {
+                        // Reintentar una vez más
+                        fetchUpdateStatus(true);
+                    } else {
+                        deferred.reject(err);
+                    }
+                });
+            };
+
+            // Iniciar el primer intento de fetch
+            fetchUpdateStatus();
             return deferred.promise;
         },
         checkLotsWithinLands: function checkLotsWithinLands(lots, lands) {
