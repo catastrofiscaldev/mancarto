@@ -1,7 +1,7 @@
 define({
   root: {
     _widgetLabel: 'Carto Maintenance Wgt',
-    widgetTitle: 'Carto Maintenance Wgt',
+    widgetTitle: 'Mantenimiento Cartográfico',
     description: 'A custom Web AppBuilder widget.',
     statusToAttend: 'Por atender',
     searchByCodeRequest: 'Búsqueda por código de predio único',
@@ -62,6 +62,7 @@ define({
     resultDeactivate: "Esta operación ha sido completada con éxito. El predio seleccionado está inactivo, por lo que su visualización no está disponible.",
     errorAcumulationLandsNumber: "Uno de los predios no se encuentra en la cartografía actual. Por favor, verifica los datos proporcionado en la solicitud. Si los datos son correctos, recomendamos contactar al administrador del sistema",
     emptyObservation: "Debe especificar una observación",
+    duplicateLotUrbanResult: "La solicitud no se puede completar debido a duplicados en la denominación de los lotes urbanos resultantes",
   }
 
   // add supported locales below:

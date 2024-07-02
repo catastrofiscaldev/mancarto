@@ -38,7 +38,9 @@ define(["./UtilityCase"], function (UtilityCase) {
             var _this = this;
 
             return UtilityCase.getBlockFromLot(this.currentLotsRows[0].geometry, this.blockUrl).then(function (block) {
-                return UtilityCase.checkExistLotUrban(_this.attributes, block, _this.lotUrl);
+                return UtilityCase.checkExistLotUrban(_this.attributes, block, _this.lotUrl, _this.currentLotsRows, _this.ubigeo);
+            }).then(function (block) {
+                return UtilityCase.checkExistLotUrbanIntoLotsOriginal(_this.attributes, _this.currentLotsRows, block);
             }).then(function (block) {
                 return UtilityCase.translateFieldsBlockToLot(_this.lotUrl, block, _this.lotGraphic);
             }).then(function (lots) {

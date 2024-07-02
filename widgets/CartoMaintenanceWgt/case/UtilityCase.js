@@ -1,9 +1,16 @@
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks/StatisticDefinition", "esri/geometry/geometryEngine", "esri/geometry/Point", "dojo/promise/all", "esri/request"], function (Deferred, QueryTask, Query, StatisticDefinition, geometryEngine, Point, all, esriRequest) {
+define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks/StatisticDefinition", "esri/geometry/geometryEngine", "esri/geometry/Point", "jimu/dijit/Message", "dojo/promise/all", "esri/request", "./CustomException"], function (Deferred, QueryTask, Query, StatisticDefinition, geometryEngine, Point, Message, all, esriRequest, CustomException) {
     /*
     * @description: Objeto que contiene las funciones para la subdivisión de lotes
     */
+
+    // class ErrorEqualUrbanLotWithinBlock extends Error {
+    //     constructor(message) {
+    //         super(message);
+    //     }
+    // }
+
     var UtilityCase = {
 
         ubigeoFieldName: 'UBIGEO',
@@ -202,12 +209,17 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
 
             return deferred.promise;
         },
-        checkExistLotUrban: function checkExistLotUrban(attributes, block, urlLots) {
+        checkExistLotUrban: function checkExistLotUrban(attributes, block, urlLots, currentLots, ubigeo) {
             var deferred = new Deferred();
+            var LotCls = new this.Lot();
             var queryLot = new Query();
+            var idLotPArray = currentLots.map(function (i) {
+                return i.attributes[LotCls.idLotP];
+            });
+            queryLot.where = LotCls.idLotP + " not in (" + idLotPArray.join(",") + ") and " + LotCls.ubigeo + " = '" + ubigeo + "'";
             queryLot.geometry = block.geometry;
             queryLot.spatialRel = "within";
-            var LotCls = new this.Lot();
+
             queryLot.outFields = [LotCls.lotUrb];
             var queryTaskLot = new QueryTask(urlLots);
             var lotsUrban = attributes.map(function (attr) {
@@ -217,17 +229,70 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                 var lots = response.features.map(function (lot) {
                     return lot.attributes[LotCls.lotUrb];
                 });
-                var exist = lotsUrban.some(function (lot) {
-                    return lots.includes(lot);
+                var setLots = new Set(lots);
+                var commonElements = lotsUrban.filter(function (lot) {
+                    return setLots.has(lot);
                 });
-                if (exist) {
-                    return deferred.reject(new Error("Los lotes urbanos registrados ya se encuentran en la manzana actual"));
+                // const exist = lotsUrban.some(lot => lots.includes(lot));
+                if (commonElements.length > 0) {
+                    return deferred.reject(new Error("La solicitud no se puede realizar porque los lotes resultantes de la subdivisi\xF3n tienen denominaciones de lotes urbanos que ya existen en la manzana actual: " + commonElements));
                 }
                 return deferred.resolve(block);
             }).catch(function (err) {
                 return deferred.reject(err);
             });
             return deferred.promise;
+        },
+        checkExistLotUrbanIntoLotsOriginal: function checkExistLotUrbanIntoLotsOriginal(attributes, currentLots, block) {
+            var deferred = new Deferred();
+            var LotCls = new this.Lot();
+            var lotUrbArray = currentLots.map(function (i) {
+                return i.attributes[LotCls.lotUrb];
+            });
+            var lotsUrban = attributes.map(function (attr) {
+                return attr.lotUrb;
+            });
+            var setLotsUrban = new Set(lotsUrban);
+            var repeatedElements = lotUrbArray.filter(function (lot) {
+                return setLotsUrban.has(lot);
+            });
+            // const exist = lotsUrban.some(lot => lotUrbArray.includes(lot));
+            if (repeatedElements.length > 0) {
+                var mensaje = new Message({
+                    message: "Uno de los lotes resultantes tiene la misma denominaci\xF3n de un lote urbano original: " + repeatedElements + ".\n\xBFDesea continuar con el proceso?",
+                    type: "question",
+                    buttons: [{
+                        label: "Sí",
+                        onClick: function onClick() {
+                            deferred.resolve(block);
+                            mensaje.hide();
+                        }
+                    }, {
+                        label: "No",
+                        onClick: function onClick() {
+                            deferred.reject(new CustomException.ErrorEqualUrbanLotWithinBlock());
+                            mensaje.hide();
+                        }
+                    }]
+                });
+            } else {
+                return deferred.resolve(block);
+            }
+            return deferred.promise;
+        },
+        checkDuplicateLotUrbanResults: function checkDuplicateLotUrbanResults(lotUrbArray) {
+            var elementCount = {};
+            lotUrbArray.forEach(function (item) {
+                if (elementCount[item]) {
+                    elementCount[item]++;
+                } else {
+                    elementCount[item] = 1;
+                }
+            });
+            var repeatedElements = Object.keys(elementCount).filter(function (key) {
+                return elementCount[key] > 1;
+            });
+            return repeatedElements;
         },
         translateFieldsBlockToLot: function translateFieldsBlockToLot(url, block, lotsResults) {
             var _this = this;
@@ -500,7 +565,12 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             this.getFeatureSchema(landUrl).then(function (land) {
                 newLandsGraphics.forEach(function (landGraphic) {
                     for (i = 0; i < pointLots.length; i++) {
+                        // Validate location
                         if (geometryEngine.intersects(landGraphic.geometry, pointLots[i].geometry)) {
+                            // Validate attributes lotUrb
+                            if (pointLots[i].attributes.LOT_URB != landGraphic.urbanLotNumber) {
+                                throw new Error("La solicitud no se puede realizar porque el predio del lote " + landGraphic.urbanLotNumber + " se asign\xF3 al lote " + pointLots[i].attributes.LOT_URB);
+                            }
                             var landProps = land.clone();
                             landProps.attributes = _this6.attributeTransfer({
                                 objTarget: land.attributes,
