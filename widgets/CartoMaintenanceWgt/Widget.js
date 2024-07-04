@@ -1,4 +1,4 @@
-define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin', "esri/toolbars/draw", "esri/toolbars/edit", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", 'dojo/_base/Color', "esri/layers/GraphicsLayer", "esri/geometry/Point", "jimu/LayerInfos/LayerInfos", "dojo/_base/lang", "esri/layers/FeatureLayer", "esri/tasks/QueryTask", "esri/tasks/query", "jimu/WidgetManager", "esri/geometry/geometryEngine", "esri/geometry/Polyline", "esri/geometry/Polygon", "esri/geometry/webMercatorUtils", "esri/tasks/Geoprocessor", 'esri/dijit/util/busyIndicator', "jimu/dijit/Message", "https://unpkg.com/@turf/turf@6/turf.min.js", "https://unpkg.com/xlsx@0.17.2/dist/xlsx.full.min.js", "dojo/Deferred", "esri/symbols/TextSymbol", "esri/symbols/Font", './CaseInfo', "esri/tasks/StatisticDefinition", "esri/request", './case/Subdivision', './case/Acumulation', './case/Independence', './case/Deactivate', './components/LandAssignment', './components/LandProcess', './case/UtilityCase', "esri/tasks/GeometryService", './case/CustomException'], function (declare, BaseWidget, _WidgetsInTemplateMixin, Draw, Edit, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol, Color, GraphicsLayer, Point, LayerInfos, lang, FeatureLayer, QueryTask, Query, WidgetManager, geometryEngine, Polyline, Polygon, webMercatorUtils, Geoprocessor, BusyIndicator, Message, turf, XLSX, Deferred, TextSymbol, Font, CaseInfo, StatisticDefinition, esriRequest, SubDivision, Acumulation, Independence, Deactivate, LandAssignment, LandProcess, UtilityCase, GeometryService, CustomException) {
+define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin', "esri/toolbars/draw", "esri/toolbars/edit", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", 'dojo/_base/Color', "esri/layers/GraphicsLayer", "esri/geometry/Point", "jimu/LayerInfos/LayerInfos", "dojo/_base/lang", "esri/layers/FeatureLayer", "esri/tasks/QueryTask", "esri/tasks/query", "jimu/WidgetManager", "esri/geometry/geometryEngine", "esri/geometry/Polyline", "esri/geometry/Polygon", "esri/geometry/webMercatorUtils", "esri/tasks/Geoprocessor", 'esri/dijit/util/busyIndicator', "jimu/dijit/Message", "https://unpkg.com/@turf/turf@6/turf.min.js", "https://unpkg.com/xlsx@0.17.2/dist/xlsx.full.min.js", "dojo/Deferred", "esri/symbols/TextSymbol", "esri/symbols/Font", './CaseInfo', "esri/tasks/StatisticDefinition", "esri/request", './case/Subdivision', './case/Acumulation', './case/Independence', './case/Deactivate', './components/LandAssignment', './components/LandProcess', './components/ToolDraw', './case/UtilityCase', "esri/tasks/GeometryService", './case/CustomException'], function (declare, BaseWidget, _WidgetsInTemplateMixin, Draw, Edit, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol, Color, GraphicsLayer, Point, LayerInfos, lang, FeatureLayer, QueryTask, Query, WidgetManager, geometryEngine, Polyline, Polygon, webMercatorUtils, Geoprocessor, BusyIndicator, Message, turf, XLSX, Deferred, TextSymbol, Font, CaseInfo, StatisticDefinition, esriRequest, SubDivision, Acumulation, Independence, Deactivate, LandAssignment, LandProcess, ToolDraw, UtilityCase, GeometryService, CustomException) {
   var _slicedToArray = function () {
     function sliceIterator(arr, i) {
       var _arr = [];
@@ -43,17 +43,17 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
   // Layers ids
   var idLyrCatastroFiscal = "CARTO_FISCAL_6806";
-  var idLyrCfPredios = "CARTO_FISCAL_6806_0";
-  var idLyrCfLotesPun = "CARTO_FISCAL_6806_1";
+  var idLyrCfPredios = "CARTO_FISCAL_8991";
+  var idLyrCfLotesPun = "CARTO_FISCAL_981";
   var idLyrCfEje_vial = "CARTO_FISCAL_6806_2";
   var idLyrCfNumeracion = "CARTO_FISCAL_6806_3";
-  var idLyrCfArancel = "CARTO_FISCAL_6806_4";
-  var idLyrCfLotes = "CARTO_FISCAL_6806_5";
+  var idLyrCfArancel = "CARTO_FISCAL_4232";
+  var idLyrCfLotes = "CARTO_FISCAL_2802";
   var idLyrCfUnidadesurbanas = "CARTO_FISCAL_6806_6";
   var idLyrCfParques = "CARTO_FISCAL_6806_7";
   var idLyrCfManzana = "CARTO_FISCAL_6806_8";
   var idLyrCfManzanaUrb = "CARTO_FISCAL_6806_9";
-  var idLyrCfSector = "CARTO_FISCAL_6806_9";
+  var idLyrCfSector = "CARTO_FISCAL_6806_10";
   // const idLyrActpuntoimg = "ACTUALIZACION_DE_PUNTO_IMG_1890"
   var idLyrDistricts = "limites_nacional_1821_2";
 
@@ -208,23 +208,51 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     resolutionDocument: null,
     floor: null,
     urbanLotNumber: null,
-
     postCreate: function postCreate() {
       this.inherited(arguments);
-      this._getAllLayers();
+      // this._getAllLayers();
+      this._setInitAppCm();
       this.geometryService = new GeometryService(this.config.geometryServiceUrl);
       selfCm = this;
-      this._filterByDistrictCm();
-      this._startExtentByDistrictCm();
+      // this._filterByDistrictCm();
+      // this._startExtentByDistrictCm();
+      // this._setToolbarDraw();
       esri.bundle.toolbars.draw.addPoint = esri.bundle.toolbars.draw.addPoint + "<br/>Pulsar <strong>CTRL</strong> para activar la alineación";
       esri.bundle.toolbars.draw.addShape = esri.bundle.toolbars.draw.addShape + "<br/>Pulsar <strong>CTRL</strong> para activar la alineación";
       esri.bundle.toolbars.draw.resume = esri.bundle.toolbars.draw.resume + "<br/>Pulsar <strong>CTRL</strong> para activar la alineación";
       esri.bundle.toolbars.draw.start = esri.bundle.toolbars.draw.start + "<br/>Pulsar <strong>CTRL</strong> para activar la alineación";
     },
     _getAllLayers: function _getAllLayers() {
+      var deferred = new Deferred();
       LayerInfos.getInstance(this.map, this.map.itemInfo).then(lang.hitch(this, function (layerInfosObj) {
-        this.layersMap = layerInfosObj;
-      }));
+        // this.layersMap = layerInfosObj;
+        return deferred.resolve(layerInfosObj);
+      })).catch(function (err) {
+        return deferred.reject(err);
+      });
+      return deferred.promise;
+    },
+    _setInitAppCm: function _setInitAppCm() {
+      var _this = this;
+
+      return this._getAllLayers().then(function (response) {
+        _this.layersMap = response;
+        _this._filterByDistrictCm();
+      }).then(function () {
+        return _this._startExtentByDistrictCm(_this.map);
+      }).then(function () {
+        _this._setToolbarDraw();
+      }).catch(function (err) {
+        _this._showMessage(err.message, type = "error");
+      });
+    },
+    _setToolbarDraw: function _setToolbarDraw() {
+      ToolDraw.map = this.map;
+      // ToolDraw.lotUrl = this.layersMap.getLayerInfoById(idLyrCfLotes).getUrl();
+      ToolDraw.lotFeatureLayer = this.map.getLayer(idLyrCfLotes);
+      ToolDraw.initToolDraw();
+      ToolDraw.controlMeasurementRealTime = this.measurementLabelApCm;
+      dojo.query('#measurementNewCm').on("click", ToolDraw.activateToolDraw.bind(ToolDraw));
     },
     _showMessage: function _showMessage(message) {
       var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 'message';
@@ -285,35 +313,50 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       return deferred.promise;
     },
     _filterByDistrictCm: function _filterByDistrictCm() {
-      var queryPredios = selfCm.layersMap.getLayerInfoById(idLyrCfPredios).getFilter();
-      queryPredios = queryPredios ? queryPredios + " AND " + selfCm.queryUbigeo : selfCm.queryUbigeo;
-      selfCm.layersMap.getLayerInfoById(idLyrCfPredios).setFilter(queryPredios);
-      selfCm.layersMap.getLayerInfoById(idLyrCfLotesPun).setFilter(selfCm.queryUbigeo);
-      selfCm.layersMap.getLayerInfoById(idLyrCfEje_vial).setFilter(selfCm.queryUbigeo);
-      selfCm.layersMap.getLayerInfoById(idLyrCfNumeracion).setFilter(selfCm.queryUbigeo);
-      selfCm.layersMap.getLayerInfoById(idLyrCfArancel).setFilter(selfCm.queryUbigeo);
-      selfCm.layersMap.getLayerInfoById(idLyrCfLotes).setFilter(selfCm.queryUbigeo);
-      selfCm.layersMap.getLayerInfoById(idLyrCfUnidadesurbanas).setFilter(selfCm.queryUbigeo);
-      selfCm.layersMap.getLayerInfoById(idLyrCfParques).setFilter(selfCm.queryUbigeo);
-      selfCm.layersMap.getLayerInfoById(idLyrCfManzana).setFilter(selfCm.queryUbigeo);
-      selfCm.layersMap.getLayerInfoById(idLyrCfSector).setFilter(selfCm.queryUbigeo);
+      var queryPredios = this.layersMap.getLayerInfoById(idLyrCfPredios).getFilter();
+      queryPredios = queryPredios ? queryPredios + " AND " + this.queryUbigeo : this.queryUbigeo;
+      this.layersMap.getLayerInfoById(idLyrCfPredios).setFilter(queryPredios);
+      this.layersMap.getLayerInfoById(idLyrCfLotesPun).setFilter(this.queryUbigeo);
+      this.layersMap.getLayerInfoById(idLyrCfEje_vial).setFilter(this.queryUbigeo);
+      this.layersMap.getLayerInfoById(idLyrCfNumeracion).setFilter(this.queryUbigeo);
+      this.layersMap.getLayerInfoById(idLyrCfArancel).setFilter(this.queryUbigeo);
+      this.layersMap.getLayerInfoById(idLyrCfLotes).setFilter(this.queryUbigeo);
+      this.layersMap.getLayerInfoById(idLyrCfUnidadesurbanas).setFilter(this.queryUbigeo);
+      this.layersMap.getLayerInfoById(idLyrCfParques).setFilter(this.queryUbigeo);
+      this.layersMap.getLayerInfoById(idLyrCfManzana).setFilter(this.queryUbigeo);
+      this.layersMap.getLayerInfoById(idLyrCfManzanaUrb).setFilter(this.queryUbigeo);
+      this.layersMap.getLayerInfoById(idLyrCfSector).setFilter(this.queryUbigeo);
       // selfCm.layersMap.getLayerInfoById(idLyrActpuntoimg).setFilter(selfCm.queryUbigeo)
     },
-    _startExtentByDistrictCm: function _startExtentByDistrictCm() {
+    _startExtentByDistrictCm: function _startExtentByDistrictCm(map) {
+      var deferred = new Deferred();
       var query = new Query();
-      query.where = selfCm.queryUbigeo;
+      query.where = this.queryUbigeo;
 
-      var qTask = new QueryTask(selfCm.layersMap.getLayerInfoById(idLyrDistricts).getUrl());
+      var qTask = new QueryTask(this.layersMap.getLayerInfoById(idLyrDistricts).getUrl());
 
-      qTask.executeForExtent(query, function (results) {
-        selfCm.map.setExtent(results.extent).then(function () {
-          // get the next scale value from the current scale
-          var homeWidget = WidgetManager.getInstance().getWidgetsByName("HomeButton");
-          homeWidget[0].homeDijit.extent = selfCm.map.extent;
-        });
-      }, function (error) {
-        console.log(error);
+      // qTask.executeForExtent(query, (results) => {
+      //   this.map.setExtent(results.extent).then(function () {
+      //     // get the next scale value from the current scale
+      //     const homeWidget = WidgetManager.getInstance().getWidgetsByName("HomeButton");
+      //     homeWidget[0].homeDijit.extent = this.map.extent;
+      //     deferred.resolve(true);
+      //   })
+      // }, (error) => {
+      //   deferred.reject(error);
+      // })
+      // return deferred.promise;
+
+      qTask.executeForExtent(query).then(function (results) {
+        return map.setExtent(results.extent);
+      }).then(function () {
+        var homeWidget = WidgetManager.getInstance().getWidgetsByName("HomeButton");
+        homeWidget[0].homeDijit.extent = map.extent;
+        deferred.resolve(true);
+      }).catch(function (err) {
+        return deferred.reject(err);
       });
+      return deferred.promise;
     },
     startup: function startup() {
       this.inherited(arguments);
@@ -595,22 +638,18 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       return deferred.promise;
     },
     _getOriginalData: function _getOriginalData(idSolicitud) {
-      var _this = this;
+      var _this2 = this;
 
       return this._getLandsOriginalsTab(idSolicitud).then(function (landsTab) {
-        return _this._getLandsOriginals();
+        return _this2._getLandsOriginals();
       }).then(function (idLots) {
-        return _this._getPointLotsOriginals(idLots);
+        return _this2._getPointLotsOriginals(idLots);
       }).then(function (idLots) {
-        return _this._getLotsOriginals(idLots);
+        return _this2._getLotsOriginals(idLots);
       }).then(function (idLots) {
         return idLots;
       }).catch(function (error) {
         return error;
-        // 
-        // throw error;
-        // selfCm._showMessage(error.message, type = "error");
-        // throw error;
       });
     },
     _zoomExtentToLote: function _zoomExtentToLote() {
@@ -725,6 +764,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             break;
           case "3":
             selfCm.divisionApCm.classList.toggle('active');
+            selfCm.containerToolDrawApCm.classList.toggle('active');
             break;
           case "4":
             selfCm.eliminacionApCm.classList.toggle('active');
@@ -806,6 +846,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
         selfCm.casesCtnApCm.classList.remove('active');
         selfCm.resultCtnApCm.classList.remove('active');
+        selfCm.containerToolDrawApCm.classList.remove('active');
         selfCm.obsCtnApCm.classList.remove('active');
         selfCm.requestTrayApCm.classList.toggle('active');
         selfCm._removeClassActiveButton();
@@ -928,6 +969,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         selfCm._removeClassActiveButton();
         // desactiva el boton luego de dibujar
       }
+      // selfCm.map.disableSnapping()
       // check exist activeButton class in button
     },
     _removeClassActiveButton: function _removeClassActiveButton() {
@@ -966,6 +1008,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _activateToolLinesDivision: function _activateToolLinesDivision(evt) {
       selfCm._removeClassActiveButton();
+      ToolDraw.toolbarDraw.deactivate();
       selfCm.idButtonDrawActive = evt.currentTarget.id;
       dojo.query('#' + selfCm.idButtonDrawActive)[0].classList.add('activeButton');
       selfCm.map.setInfoWindowOnClick(false);
@@ -1021,14 +1064,14 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         layer: graphicLayerLineaDivision // El `GraphicsLayer` a utilizar
       });
 
-      var cflayer = selfCm.layersMap.getLayerInfoById(idLyrCfLotes);
-      var propertyLayer = new FeatureLayer(cflayer.getUrl(), {
-        mode: FeatureLayer.MODE_ONDEMAND,
-        outFields: ["*"]
-      });
+      // const cflayer = selfCm.layersMap.getLayerInfoById(idLyrCfLotes)
+      // const propertyLayer = new FeatureLayer(cflayer.getUrl(), {
+      //   mode: FeatureLayer.MODE_ONDEMAND,
+      //   outFields: ["*"]
+      // });
 
       var layerInfos = [{
-        layer: propertyLayer
+        layer: selfCm.map.getLayer(idLyrCfLotes)
       }, graphicsLayerInfo];
 
       // Agregar el `LayerInfo` al mapa y habilitar el snapping
@@ -1284,6 +1327,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _activateToolPrediosByDivision: function _activateToolPrediosByDivision(evt) {
       selfCm._removeClassActiveButton();
+      ToolDraw.toolbarDraw.deactivate();
       selfCm.idButtonDrawActive = evt.currentTarget.id;
       dojo.query('#' + selfCm.idButtonDrawActive)[0].classList.add('activeButton');
       selfCm.cpmPredioDivision = evt.currentTarget.dataset.cpm === 'null' ? null : evt.currentTarget.dataset.cpm;
@@ -2456,12 +2500,6 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       // dojo.query(".tablinksCm.active")[0].click();
     },
     onOpen: function onOpen() {
-      console.log('CartoMaintenanceWgt::onOpen');
-      // let panel = this.getPanel();
-      // panel.position.height = 700;
-      // panel.setPosition(panel.position);
-      // panel.panelManager.normalizePanel(panel);
-
       this._createToolbar();
 
       dojo.query(".backTrayClsCm").on('click', this._openFormCase);
@@ -2490,6 +2528,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       dojo.query('.selectLimitClsCm').on("change", this._changeLimitPagination);
       dojo.query('.buttonPaginationPrevClsCm').on("click", this._prevPagePagination);
       dojo.query('.buttonPaginationNextClsCm').on("click", this._nextPagePagination);
+
       // dojo.query('.columnCaseClsCm').on("click", this._sortedByDate)
       this._loadIniRequestsCm();
 
@@ -2505,6 +2544,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       });
     }
   }
+
+  // this.toolDraw.map = this.map;
 
   // onClose(){
   //   console.log('CartoMaintenanceWgt::onClose');
