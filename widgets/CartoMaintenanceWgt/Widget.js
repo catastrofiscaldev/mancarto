@@ -1,4 +1,16 @@
-define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin', "esri/toolbars/draw", "esri/toolbars/edit", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", 'dojo/_base/Color', "esri/layers/GraphicsLayer", "esri/geometry/Point", "jimu/LayerInfos/LayerInfos", "dojo/_base/lang", "esri/layers/FeatureLayer", "esri/tasks/QueryTask", "esri/tasks/query", "jimu/WidgetManager", "esri/geometry/geometryEngine", "esri/geometry/Polyline", "esri/geometry/Polygon", "esri/geometry/webMercatorUtils", "esri/tasks/Geoprocessor", 'esri/dijit/util/busyIndicator', "jimu/dijit/Message", "https://unpkg.com/@turf/turf@6/turf.min.js", "https://unpkg.com/xlsx@0.17.2/dist/xlsx.full.min.js", "dojo/Deferred", "esri/symbols/TextSymbol", "esri/symbols/Font", './CaseInfo', "esri/tasks/StatisticDefinition", "esri/request", './case/Subdivision', './case/Acumulation', './case/Independence', './case/Deactivate', './components/LandAssignment', './components/LandProcess', './components/ToolDraw', './case/UtilityCase', "esri/tasks/GeometryService", './case/CustomException'], function (declare, BaseWidget, _WidgetsInTemplateMixin, Draw, Edit, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol, Color, GraphicsLayer, Point, LayerInfos, lang, FeatureLayer, QueryTask, Query, WidgetManager, geometryEngine, Polyline, Polygon, webMercatorUtils, Geoprocessor, BusyIndicator, Message, turf, XLSX, Deferred, TextSymbol, Font, CaseInfo, StatisticDefinition, esriRequest, SubDivision, Acumulation, Independence, Deactivate, LandAssignment, LandProcess, ToolDraw, UtilityCase, GeometryService, CustomException) {
+define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin', "esri/toolbars/draw", "esri/toolbars/edit", "esri/graphic", "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleMarkerSymbol", "esri/symbols/SimpleLineSymbol", 'dojo/_base/Color', "esri/layers/GraphicsLayer", "esri/geometry/Point", "jimu/LayerInfos/LayerInfos", "dojo/_base/lang", "esri/layers/FeatureLayer", "esri/tasks/QueryTask", "esri/tasks/query", "jimu/WidgetManager", "esri/geometry/geometryEngine", "esri/geometry/Polyline", "esri/geometry/Polygon", "esri/geometry/webMercatorUtils", "esri/tasks/Geoprocessor", 'esri/dijit/util/busyIndicator', "jimu/dijit/Message", "https://unpkg.com/@turf/turf@6/turf.min.js", "https://unpkg.com/xlsx@0.17.2/dist/xlsx.full.min.js", "dojo/Deferred", "esri/symbols/TextSymbol", "esri/symbols/Font", './CaseInfo', "esri/tasks/StatisticDefinition", "esri/request", './case/Subdivision', './case/Acumulation', './case/Independence', './case/Deactivate', './components/LandAssignment', './components/LandProcess', './components/ToolDraw', './case/UtilityCase', "esri/tasks/GeometryService", './case/CustomException', "esri/tasks/LengthsParameters"], function (declare, BaseWidget, _WidgetsInTemplateMixin, Draw, Edit, Graphic, SimpleFillSymbol, SimpleMarkerSymbol, SimpleLineSymbol, Color, GraphicsLayer, Point, LayerInfos, lang, FeatureLayer, QueryTask, Query, WidgetManager, geometryEngine, Polyline, Polygon, webMercatorUtils, Geoprocessor, BusyIndicator, Message, turf, XLSX, Deferred, TextSymbol, Font, CaseInfo, StatisticDefinition, esriRequest, SubDivision, Acumulation, Independence, Deactivate, LandAssignment, LandProcess, ToolDraw, UtilityCase, GeometryService, CustomException, LengthsParameters) {
+  function _toConsumableArray(arr) {
+    if (Array.isArray(arr)) {
+      for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+        arr2[i] = arr[i];
+      }
+
+      return arr2;
+    } else {
+      return Array.from(arr);
+    }
+  }
+
   var _slicedToArray = function () {
     function sliceIterator(arr, i) {
       var _arr = [];
@@ -211,6 +223,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     postCreate: function postCreate() {
       this.inherited(arguments);
       // this._getAllLayers();
+      this._createToolbar();
       this._setInitAppCm();
       this.geometryService = new GeometryService(this.config.geometryServiceUrl);
       selfCm = this;
@@ -250,8 +263,12 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       ToolDraw.map = this.map;
       // ToolDraw.lotUrl = this.layersMap.getLayerInfoById(idLyrCfLotes).getUrl();
       ToolDraw.lotFeatureLayer = this.map.getLayer(idLyrCfLotes);
+      ToolDraw.anotherToolbar = toolbarCm;
       ToolDraw.initToolDraw();
       ToolDraw.controlMeasurementRealTime = this.measurementLabelApCm;
+      ToolDraw.controlMeasurementTable = this.bodyTbMeasurementApCm;
+      ToolDraw.linearDivision = graphicLayerLineaDivision;
+      ToolDraw.callbackAddLineDivision = this._divisorLine;
       dojo.query('#measurementNewCm').on("click", ToolDraw.activateToolDraw.bind(ToolDraw));
     },
     _showMessage: function _showMessage(message) {
@@ -834,6 +851,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         selfCm._removeLayerGraphic(idGraphicPredioSelectedCm);
         selfCm._removeLayerGraphic(idGraphicLabelCodLote);
         selfCm.bodyTbDatosLoteDvApCm.innerHTML = '';
+        // selfCm.bodyTbMeasurementApCm.innerHTML = ''
+        ToolDraw.removeAllGraphicsIntoMeasurements();
 
         graphicLayerLineaDivision.clear();
         graphicLayerLabelLineaDivision.clear();
@@ -915,8 +934,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm._FormResult(selfCm.codRequestsCm, selfCm.caseDescription);
     },
     _createToolbar: function _createToolbar() {
-      toolbarCm = new Draw(selfCm.map);
-      toolbarCm.on("draw-end", selfCm._addToMap);
+      toolbarCm = new Draw(this.map);
+      toolbarCm.on("draw-end", this._addToMap);
     },
     _addToMap: function _addToMap(evt) {
       if (evt.geometry.type === "point") {
@@ -957,20 +976,69 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           console.log(error);
         });
       } else if (evt.geometry.type === "polyline") {
-        selfCm.idxLines = selfCm.idxLines + 1;
-        var nameIdLine = 'Polyline_' + selfCm.idxLines;
-        var graphic = new Graphic(evt.geometry, symbolDivisionLote, { id: nameIdLine });
-        graphicLayerLineaDivision.add(graphic);
-        selfCm._populateTableDrawLine(nameIdLine);
-        selfCm._addNameToLine(nameIdLine, evt.geometry);
-        selfCm.map.addLayer(graphicLayerLineaDivision);
-        selfCm.map.setInfoWindowOnClick(true);
-        toolbarCm.deactivate();
-        selfCm._removeClassActiveButton();
+        selfCm._divisorLine(evt.geometry);
+        // selfCm.idxLines = selfCm.idxLines + 1
+        // const nameIdLine = `Polyline_${selfCm.idxLines}`
+        // const graphic = new Graphic(evt.geometry, symbolDivisionLote, { id: nameIdLine });
+        // graphicLayerLineaDivision.add(graphic);
+        // selfCm._populateTableDrawLine(nameIdLine)
+        // selfCm._addNameToLine(nameIdLine, evt.geometry)
+        // selfCm.map.addLayer(graphicLayerLineaDivision);
+        // selfCm.map.setInfoWindowOnClick(true);
+        // toolbarCm.deactivate();
+        // selfCm._removeClassActiveButton()
         // desactiva el boton luego de dibujar
       }
       // selfCm.map.disableSnapping()
       // check exist activeButton class in button
+    },
+    _divisorLine: function _divisorLine(geometry) {
+      selfCm.idxLines = selfCm.idxLines + 1;
+      var nameIdLine = 'Polyline_' + selfCm.idxLines;
+
+      var polylineGeomUtm = webMercatorUtils.webMercatorToGeographic(geometry);
+      var vertices = polylineGeomUtm.paths[0];
+      var lastTwoCoords = vertices.slice(-2);
+      var line = turf.lineString(lastTwoCoords);
+      var bearing = turf.bearing(turf.point(line.geometry.coordinates[0]), turf.point(line.geometry.coordinates[1]));
+      var options = { units: 'meters' };
+      var addDistance = 0.1;
+      var point = turf.point(line.geometry.coordinates[1]);
+      var destintation = turf.destination(point, addDistance, bearing, options);
+
+      // reverse coordinates of line
+      var vertices2 = [].concat(_toConsumableArray(vertices));
+      vertices2.reverse();
+      var lastTwoCoords2 = vertices2.slice(-2);
+      var line2 = turf.lineString(lastTwoCoords2);
+      var bearing2 = turf.bearing(turf.point(line2.geometry.coordinates[0]), turf.point(line2.geometry.coordinates[1]));
+      var point2 = turf.point(line2.geometry.coordinates[1]);
+      var destintation2 = turf.destination(point2, addDistance, bearing2, options);
+
+      vertices[vertices.length - 1] = destintation.geometry.coordinates;
+      // add vertices2 first element to vertices
+      vertices.unshift(destintation2.geometry.coordinates);
+
+      var polyline = new Polyline({
+        paths: [vertices],
+        spatialReference: polylineGeomUtm.spatialReference
+      });
+      var response = webMercatorUtils.geographicToWebMercator(polyline);
+
+      // const polygonW = webMercatorUtils.webMercatorToGeographic(selfCm.currentLotsRows[0].geometry);
+      // if (!geometryEngine.touches(polygonW, response)) {
+      //   response = geometry;
+      // }
+
+
+      var graphic = new Graphic(response, symbolDivisionLote, { id: nameIdLine });
+      graphicLayerLineaDivision.add(graphic);
+      selfCm._populateTableDrawLine(nameIdLine);
+      selfCm._addNameToLine(nameIdLine, response);
+      selfCm.map.addLayer(graphicLayerLineaDivision);
+      selfCm.map.setInfoWindowOnClick(true);
+      toolbarCm.deactivate();
+      selfCm._removeClassActiveButton();
     },
     _removeClassActiveButton: function _removeClassActiveButton() {
       if (dojo.query('#' + selfCm.idButtonDrawActive).length > 0) {
@@ -1008,7 +1076,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _activateToolLinesDivision: function _activateToolLinesDivision(evt) {
       selfCm._removeClassActiveButton();
-      ToolDraw.toolbarDraw.deactivate();
+      ToolDraw.deactivateToolbarAnotherToolbar();
       selfCm.idButtonDrawActive = evt.currentTarget.id;
       dojo.query('#' + selfCm.idButtonDrawActive)[0].classList.add('activeButton');
       selfCm.map.setInfoWindowOnClick(false);
@@ -1032,7 +1100,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         // alwaysSnap: true,
         // snapKey: keys.CTRL,
         snapPointSymbol: symbolSnapPointCm,
-        tolerance: 5
+        tolerance: 1
       });
       // get layerinfo by id of layer to snap
       var layerInfos = [{
@@ -1067,19 +1135,25 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       // const cflayer = selfCm.layersMap.getLayerInfoById(idLyrCfLotes)
       // const propertyLayer = new FeatureLayer(cflayer.getUrl(), {
       //   mode: FeatureLayer.MODE_ONDEMAND,
-      //   outFields: ["*"]
+      //   outFields: ["*"],
+      //   where: selfCm.lotesQuery
       // });
+      var propertyLayer = selfCm.map.getLayer(idLyrCfLotes);
+      // change MODE_ONDEMAND
+      propertyLayer.mode = 2;
+      // propertyLayer.setAutoGeneralize(false);
 
       var layerInfos = [{
-        layer: selfCm.map.getLayer(idLyrCfLotes)
+        // layer: selfCm.map.getLayer(idLyrCfLotes)
+        layer: propertyLayer
       }, graphicsLayerInfo];
 
       // Agregar el `LayerInfo` al mapa y habilitar el snapping
       selfCm.map.enableSnapping({
         layerInfos: layerInfos, // Agregar el `LayerInfo` al mapa
-        // alwaysSnap: true,
+        alwaysSnap: true,
         snapPointSymbol: symbolSnapPointCm,
-        tolerance: 5
+        tolerance: 0
       });
     },
     _unionFeatures: function _unionFeatures(arr) {
@@ -1209,6 +1283,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
               rings: [i],
               spatialReference: item.spatialReference
             });
+
+            // const simplePolygonG = webMercatorUtils.webMercatorToGeographic(simplePolygon);
             response.push(simplePolygon);
           });
         };
@@ -1327,7 +1403,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _activateToolPrediosByDivision: function _activateToolPrediosByDivision(evt) {
       selfCm._removeClassActiveButton();
-      ToolDraw.toolbarDraw.deactivate();
+      ToolDraw.deactivateToolbarAnotherToolbar();
       selfCm.idButtonDrawActive = evt.currentTarget.id;
       dojo.query('#' + selfCm.idButtonDrawActive)[0].classList.add('activeButton');
       selfCm.cpmPredioDivision = evt.currentTarget.dataset.cpm === 'null' ? null : evt.currentTarget.dataset.cpm;
@@ -2500,7 +2576,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       // dojo.query(".tablinksCm.active")[0].click();
     },
     onOpen: function onOpen() {
-      this._createToolbar();
+      // this._createToolbar();
 
       dojo.query(".backTrayClsCm").on('click', this._openFormCase);
       dojo.query(".tablinksCm").on('click', this._loadRequestTabActiveCm);

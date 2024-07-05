@@ -1,4 +1,4 @@
-define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymbol', 'esri/Color', 'esri/SnappingManager', 'esri/layers/FeatureLayer', 'esri/geometry/webMercatorUtils', 'esri/symbols/Font', 'esri/geometry/Point', 'esri/symbols/TextSymbol', 'https://unpkg.com/@turf/turf@6/turf.min.js'], function (Draw, Graphic, CartographicLineSymbol, Color, SnappingManager, FeatureLayer, webMercatorUtils, Font, Point, TextSymbol, turf)
+define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymbol', 'esri/Color', 'esri/SnappingManager', 'esri/layers/FeatureLayer', 'esri/geometry/webMercatorUtils', 'esri/symbols/Font', 'esri/geometry/Point', 'esri/geometry/Polyline', 'esri/symbols/TextSymbol', 'https://unpkg.com/@turf/turf@6/turf.min.js'], function (Draw, Graphic, CartographicLineSymbol, Color, SnappingManager, FeatureLayer, webMercatorUtils, Font, Point, Polyline, TextSymbol, turf)
 // getLength,
 {
     /*
@@ -9,8 +9,11 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
         toolbarDraw: null, // @params
         map: null, // @params
         controlMeasurementRealTime: null, // @params
+        controlMeasurementTable: null, // @params
         lotFeatureLayer: null, // @params
         anotherToolbar: null, // @params
+        linearDivision: null, // @params
+        callbackAddLineDivision: null, // @params
 
         // @const
         lineSymbol: null,
@@ -18,8 +21,12 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
         currentDistance: 0,
         currentCoordinates: [],
         landsFeature: null,
+        controllerId: 0,
+        measurements: {},
 
         initToolDraw: function initToolDraw() {
+            var _this = this;
+
             this.toolbarDraw = new Draw(this.map);
             this.toolbarDraw.on('draw-end', this.addGraphic.bind(this));
             this.lineSymbol = new CartographicLineSymbol(CartographicLineSymbol.STYLE_SHORTDASH, new Color([40, 40, 40, 1]), 3);
@@ -31,17 +38,45 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
 
             this.map.on('click', this.clickIntoMap.bind(this));
             this.map.on('mouse-move', this.moveMouseMap.bind(this));
+            this.map.on('key-up', function (evt) {
+                if (evt.key === 'Escape' && _this.statusDraw) {
+                    _this.currentCoordinates = [];
+                    _this.currentDistance = 0.00;
+                }
+            });
+
+            // document.addEventListener('keyup', (evt) => {
+            //     if (evt.key === 'Escape' && this.statusDraw) {
+            //         this.currentCoordinates = [];
+            //         this.currentDistance = 0.00;
+            //     }
+            // });
 
             // this.landsFeature = new FeatureLayer(this.lotUrl, {
             //     mode: FeatureLayer.MODE_ONDEMAND,
             //     outFields: ["*"]
             // });
         },
+        getUUID: function getUUID() {
+            var uuid = crypto.randomUUID();
+            uuid = 'a' + uuid.replace('-', '');
+            return uuid;
+        },
         addGraphic: function addGraphic(evt) {
             this.toolbarDraw.deactivate();
-            var graphic = new Graphic(evt.geometry, this.lineSymbol);
+            this.controllerId = this.controllerId + 1;
+            var idPolylineGraphic = this.getUUID();
+            var idLabelGraphic = this.getUUID();
+            var graphic = new Graphic(evt.geometry, this.lineSymbol, { id: idPolylineGraphic });
             this.map.graphics.add(graphic);
-            this.addLabelToCenterLine(evt.geometry, this.currentDistance);
+            this.addLabelToCenterLine(evt.geometry, this.currentDistance, idLabelGraphic);
+            this.measurements[idPolylineGraphic] = {
+                distance: this.currentDistance.toFixed(2),
+                // geometry: evt.geometry,
+                // extent: evt.geometry.getExtent(),
+                idLabel: idLabelGraphic
+            };
+            this.addRowToTable(this.measurements[idPolylineGraphic], idPolylineGraphic);
             this.map.enableMapNavigation();
             this.map.setInfoWindowOnClick(true);
             this.statusDraw = false;
@@ -49,9 +84,10 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
             // this.map.disableSnapping();
         },
         activateToolDraw: function activateToolDraw(evt) {
+            this.anotherToolbar.deactivate();
             var snapManager = this.map.enableSnapping();
             // this.map.enableSnapping();
-            // snapManager.alwaysSnap = true;
+            snapManager.alwaysSnap = true;
 
             var layerInfos = [{
                 layer: this.lotFeatureLayer
@@ -64,7 +100,111 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
             this.currentCoordinates = [];
             this.toolbarDraw.activate('polyline');
         },
-        addRowToTable: function addRowToTable() {},
+        deactivateToolbarAnotherToolbar: function deactivateToolbarAnotherToolbar() {
+            this.toolbarDraw.deactivate();
+            this.map.enableMapNavigation();
+            this.map.setInfoWindowOnClick(true);
+            this.statusDraw = false;
+            this.currentDistance = 0.00;
+            this.controlMeasurementRealTime.innerHTML = this.currentDistance.toFixed(2);
+        },
+        addRowToTable: function addRowToTable(measurementItem, id) {
+            var _this2 = this;
+
+            // console.log(measurementItem);
+            var row = '\n                <tr data-idPolyline=' + id + '>\n                    <td class="center-aligned" contenteditable="true" >\n                        ' + measurementItem.distance + '\n                    </td>\n                    <td class="center-aligned">\n                        <i class="fas fa-route"></i>\n                    </td>\n                    <td class="center-aligned">\n                        <span><i class="fas fa-search"></i></span>\n                    </td>\n                    <td class="center-aligned">\n                        <span style="color: #FF5722;"><i class="far fa-trash-alt"></i></span>\n                    </td>\n                </tr>\n            ';
+
+            // const table = this.controlMeasurementTable.querySelector('tbody');
+
+            // add function to clic delete row in last column
+            this.controlMeasurementTable.insertAdjacentHTML('beforeend', row);
+            var deleteRow = this.controlMeasurementTable.querySelector('tr[data-idPolyline="' + id + '"] td:last-child');
+            var zoomToGraphic = this.controlMeasurementTable.querySelector('tr[data-idPolyline="' + id + '"] td:nth-child(3)');
+            var editDistance = this.controlMeasurementTable.querySelector('tr[data-idPolyline="' + id + '"] td:first-child');
+            // add listener when click checkbox
+            var convertDivisionLine = this.controlMeasurementTable.querySelector('tr[data-idPolyline="' + id + '"] td:nth-child(2)');
+
+            deleteRow.addEventListener('click', this.deleteRowTable.bind(this));
+            zoomToGraphic.addEventListener('click', this.zoomToGraphic.bind(this));
+            // add listener when press enter in cell
+            editDistance.addEventListener('keydown', function (evt) {
+                if (evt.key === 'Enter') {
+                    evt.preventDefault();
+                    _this2.editDistance(evt);
+                }
+            });
+            editDistance.addEventListener('input', this.validateNumericInput);
+            convertDivisionLine.addEventListener('click', this.parseToLineDivision.bind(this));
+        },
+        validateNumericInput: function validateNumericInput(evt) {
+            var value = evt.target.innerText;
+            var regex = /^[0-9]*\.?[0-9]*$/; // Permite números y un punto decimal
+
+            if (!regex.test(value)) {
+                evt.target.innerText = value.slice(0, -1); // Elimina el último carácter si no es válido
+            }
+        },
+        deleteRowTable: function deleteRowTable(evt) {
+            var graphic = this.getGraphicById(evt.currentTarget.parentElement.dataset.idpolyline);
+            this.map.graphics.remove(graphic);
+            var idLabel = this.measurements[evt.currentTarget.parentElement.dataset.idpolyline].idLabel;
+            var graphicLabel = this.getGraphicById(idLabel);
+            this.map.graphics.remove(graphicLabel);
+            evt.currentTarget.parentElement.remove();
+        },
+        zoomToGraphic: function zoomToGraphic(evt) {
+            var graphic = this.getGraphicById(evt.currentTarget.parentElement.dataset.idpolyline);
+            this.map.setExtent(graphic.geometry.getExtent());
+        },
+        editDistance: function editDistance(evt) {
+            var idPolyline = evt.currentTarget.parentElement.dataset.idpolyline;
+            var newDistance = parseFloat(evt.currentTarget.textContent);
+            var idLabel = this.measurements[idPolyline].idLabel;
+            var polyline = this.getGraphicById(idPolyline).geometry;
+            var distance = parseFloat(this.measurements[idPolyline].distance);
+            var newGeometry = this.updatePolylineLength(newDistance, distance, polyline);
+            if (!newGeometry) {
+                return;
+            }
+
+            this.map.graphics.graphics.forEach(function (graphic) {
+                if (graphic.attributes && graphic.attributes.id === idPolyline) {
+                    graphic.setGeometry(newGeometry);
+                }
+            });
+
+            this.measurements[idPolyline].distance = newDistance.toFixed(2);
+            var graphicLabel = this.getGraphicById(idLabel);
+            this.map.graphics.remove(graphicLabel);
+            this.addLabelToCenterLine(newGeometry, newDistance, idLabel);
+        },
+        parseToLineDivision: function parseToLineDivision(evt) {
+            var idPolyline = evt.currentTarget.parentElement.dataset.idpolyline;
+            var graphic = this.getGraphicById(idPolyline);
+            this.callbackAddLineDivision(graphic.geometry);
+            this.deleteRowTable(evt);
+            // if (evt.currentTarget.checked) {
+            //     const graphic = this.getGraphicById(id);
+            //     this.callbackAddLineDivision(graphic.geometry);
+            //     // this.linearDivision.add(graphic);
+            //     // this.map.addLayer(this.linearDivision);
+            // } else {
+            //     const graphic = this.getGraphicById(id);
+
+            //     this.linearDivision.remove(graphic);
+            // }
+        },
+        getGraphicById: function getGraphicById(id) {
+            var graphic = this.map.graphics.graphics.filter(function (graphic) {
+                if (graphic.attributes && graphic.attributes.id === id) {
+                    return graphic;
+                }
+            });
+            if (graphic.length === 0) {
+                return null;
+            }
+            return graphic[0];
+        },
         getDistance: function getDistance(arrayPoints) {
             var totalDistance = 0;
             if (arrayPoints.length < 2) {
@@ -89,7 +229,7 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
                 }
             }
         },
-        addLabelToCenterLine: function addLabelToCenterLine(geometry, distance) {
+        addLabelToCenterLine: function addLabelToCenterLine(geometry, distance, idLabelGraphic) {
             var midPoint = this.findMidPoint(geometry, distance);
             var xMidPoint = midPoint.geometry.coordinates[0];
             var yMidPoint = midPoint.geometry.coordinates[1];
@@ -111,8 +251,9 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
             var angle = this.getAngleByLabel(pointLabel, geometry);
             // // rotate text symbol
             txtSym.setAngle(angle);
-            var graphicLabel = new Graphic(pointLabel, txtSym, { id: 'asdasd' });
+            var graphicLabel = new Graphic(pointLabel, txtSym, { id: idLabelGraphic });
             this.map.graphics.add(graphicLabel);
+            // return idLabelGraphic;
         },
         findMidPoint: function findMidPoint(polyline, distance) {
             var polylineGeomUtm = webMercatorUtils.webMercatorToGeographic(polyline);
@@ -131,41 +272,58 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
             var angle = turf.bearing(turf.point(points[0]), turf.point(points[1]));
             angle = angle < 0 ? 180 + angle : angle;
             return angle - 90;
+        },
+        updatePolylineLength: function updatePolylineLength(newDistamce, distance, polyline) {
+            var polylineGeomUtm = webMercatorUtils.webMercatorToGeographic(polyline);
+            var vertices = polylineGeomUtm.paths[0];
+            if (newDistamce === 0) {
+                return false;
+            } else if (newDistamce < distance) {
+                var line = turf.lineString(vertices);
+                var options = { units: 'meters' };
+                var sliced = turf.lineSliceAlong(line, 0, newDistamce, options);
+                vertices = sliced.geometry.coordinates;
+            } else if (newDistamce > distance) {
+                var lastTwoCoords = vertices.slice(-2);
+                var _line = turf.lineString(lastTwoCoords);
+                var bearing = turf.bearing(turf.point(_line.geometry.coordinates[0]), turf.point(_line.geometry.coordinates[1]));
+                var _options = { units: 'meters' };
+                var addDistance = newDistamce - distance;
+                var point = turf.point(_line.geometry.coordinates[1]);
+                var destintation = turf.destination(point, addDistance, bearing, _options);
+                vertices[vertices.length - 1] = destintation.geometry.coordinates;
+            }
+
+            // console.log(vertices);
+            // map.graphics.clear();
+
+            polyline = new Polyline({
+                paths: [vertices],
+                spatialReference: polylineGeomUtm.spatialReference
+            });
+
+            var response = webMercatorUtils.geographicToWebMercator(polyline);
+            return response;
+            // map.graphics.add(new Graphic(a, lineSymbol));
+            // distance = newDistamce;
+            // addLabelToCenter(a, distance);
+            // window.polyline = a;
+            // return vertices;
+        },
+        removeAllGraphicsIntoMeasurements: function removeAllGraphicsIntoMeasurements() {
+            this.controlMeasurementTable.innerHTML = '';
+            // iterame this.measurements and delete all graphics by id
+            for (var key in this.measurements) {
+                var graphic = this.getGraphicById(key);
+                this.map.graphics.remove(graphic);
+                var idLabel = this.measurements[key].idLabel;
+                var graphicLabel = this.getGraphicById(idLabel);
+                this.map.graphics.remove(graphicLabel);
+            }
+            this.measurements = {};
+
+            this.controlMeasurementRealTime.innerHTML = '0.00';
         }
-
-        // stringToObjectHtml(htmlString) {
-        //     // const htmlObject = dojo.create('div', { innerHTML: htmlString });
-        //     // return htmlObject;
-        // },
-        // renderTableMatrixLand() {
-        //     const renderString = `<div class="ctnParamsCm">
-        //                 <div class="lblParamCm">
-        //                     <span class="alignVCenter">
-        //                         Predio matriz
-        //                     </span>
-        //                 </div>
-        //             </div>
-        //             <div class="ctnParamsCm ctnTablesClsCm">
-        //                 <table class="tableClsCm">
-        //                     <thead>
-        //                         <tr>
-        //                             <th class="center-aligned">Nro</th>
-        //                             <th>Cod. Predio<br>Municipal</th>
-        //                             <th>Dirección</th>
-        //                         </tr>
-        //                     </thead>
-        //                     <tbody>
-        //                         <tr data-id=${this.matrixLand[0].cpm}>
-        //                             <td>1</td>
-        //                             <td>${this.matrixLand[0].cpm}</td>
-        //                             <td>${this.matrixLand[0].address}</td>
-        //                         </tr>
-        //                     </tbody>
-        //                 </table>
-        //             </div>`;
-        //     return this.stringToObjectHtml(renderString);
-        // },
-
     };
     return ToolDraw;
 });
