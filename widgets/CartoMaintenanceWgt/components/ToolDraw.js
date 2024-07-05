@@ -58,9 +58,12 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
             // });
         },
         getUUID: function getUUID() {
-            var uuid = crypto.randomUUID();
-            uuid = 'a' + uuid.replace('-', '');
-            return uuid;
+            var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0,
+                    v = c === 'x' ? r : r & 0x3 | 0x8;
+                return v.toString(16);
+            });
+            return 'a' + uuid.replace(/-/g, '');
         },
         addGraphic: function addGraphic(evt) {
             this.toolbarDraw.deactivate();
