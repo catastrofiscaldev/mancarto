@@ -51,7 +51,6 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             this.coordY = 'COORD_Y';
             this.zonaUtm = 'ZONA_UTM';
             this.estadoIns = 'ESTADO_INS';
-            this.tipLot = 'TIP_LOT';
         },
         Lot: function Lot() {
             this.idLotP = 'ID_LOTE_P';
@@ -70,7 +69,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             this.secEjec = 'SEC_EJEC';
         },
         receptionModelRequest: function receptionModelRequest() {
-            return ["COD_PRE", "COD_CPU", "COD_SECT", "COD_MZN", "COD_LOTE", "COD_UU", "COD_VIA", "TIPO_UU", "NOM_UU", "NOM_REF", "MZN_URB", "LOT_URB", "TIP_VIA", "NOM_VIA", "CUADRA", "LADO", "DIR_MUN", "DIR_URB", "COORD_X", "COORD_Y", "RAN_CPU", "COD_UI", "COD_VER", "ID_LOTE_P", "ID", 'id_lote_puerta', 'longitude_puerta', 'latitude_puerta', 'lote_urbano_puerta', 'manzana_urbana_puerta'];
+            return ["COD_PRE", "COD_CPU", "COD_SECT", "COD_MZN", "COD_LOTE", "COD_UU", "COD_VIA", "TIPO_UU", "NOM_UU", "NOM_REF", "MZN_URB", "LOT_URB", "TIP_VIA", "NOM_VIA", "CUADRA", "LADO", "DIR_MUN", "DIR_URB", "COORD_X", "COORD_Y", "RAN_CPU", "COD_UI", "COD_VER", "ID_LOTE_P", "ID"];
         },
         matchWithReceptionModel: function matchWithReceptionModel(object) {
             var modelRequests = this.receptionModelRequest();
@@ -299,7 +298,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             var _this = this;
 
             var deferred = new Deferred();
-            var LotCls = new this.Lot();
+
             this.getFeatureSchema(url).then(function (lot) {
                 var lots = lotsResults.map(function (graphic) {
                     var lotIdx = lot.clone();
@@ -308,7 +307,6 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                         objBase: block.attributes
                     });
                     lotIdx.geometry = graphic.geometry;
-                    lotIdx.attributes[LotCls.tipLot] = graphic.attributes.tipLot;
                     return lotIdx;
                 });
                 return deferred.resolve(lots);
@@ -326,7 +324,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             tipLot = [].concat(_toConsumableArray(new Set(tipLot))) == [2] ? '2' : '1';
             return tipLot;
         },
-        calculateFieldsOfLot: function calculateFieldsOfLot(lotUrl, lots, ubigeo, codRequests, user, attributes) {
+        calculateFieldsOfLot: function calculateFieldsOfLot(lotUrl, lots, ubigeo, codRequests, user, attributes, tipLot) {
             var _this2 = this;
 
             var deferred = new Deferred();
@@ -361,16 +359,15 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             });
 
             queryLotTask.execute(queryLot).then(function (response) {
-                for (idx = 0; idx < lots.length; idx++) {
-                    // lots.forEach((lot, idx) => {
-                    lots[idx].attributes[LotCls.idLotP] = response.features[0].attributes[statDefIdLoteP.outStatisticFieldName] + idx + 1;
-                    lots[idx].attributes[LotCls.ranCpu] = response.features[0].attributes[statDefRanCpu.outStatisticFieldName] + idx + 1;
-                    lots[idx].attributes[LotCls.anoCart] = new Date().getFullYear();
-                    lots[idx].attributes[LotCls.fuente] = codRequests;
-                    lots[idx].attributes[LotCls.nomPc] = _this2.platformUpdate;
-                    lots[idx].attributes[LotCls.nomUser] = user;
-                    // lot.attributes[LotCls.tipLot] = tipLot;
-                    lots[idx].attributes[LotCls.estadoIns] = _this2.estadoInsValue;
+                lots.forEach(function (lot, idx) {
+                    lot.attributes[LotCls.idLotP] = response.features[0].attributes[statDefIdLoteP.outStatisticFieldName] + idx + 1;
+                    lot.attributes[LotCls.ranCpu] = response.features[0].attributes[statDefRanCpu.outStatisticFieldName] + idx + 1;
+                    lot.attributes[LotCls.anoCart] = new Date().getFullYear();
+                    lot.attributes[LotCls.fuente] = codRequests;
+                    lot.attributes[LotCls.nomPc] = _this2.platformUpdate;
+                    lot.attributes[LotCls.nomUser] = user;
+                    lot.attributes[LotCls.tipLot] = tipLot;
+                    lot.attributes[LotCls.estadoIns] = _this2.estadoInsValue;
 
                     var _iteratorNormalCompletion = true;
                     var _didIteratorError = false;
@@ -380,9 +377,9 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                         for (var _iterator = attributes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
                             var attr = _step.value;
 
-                            if (geometryEngine.intersects(lots[idx].geometry, attr.geometry)) {
-                                lots[idx].attributes[LotCls.codLot] = attr.codLot;
-                                lots[idx].attributes[LotCls.lotUrb] = attr.lotUrb;
+                            if (geometryEngine.intersects(lot.geometry, attr.geometry)) {
+                                lot.attributes[LotCls.codLot] = attr.codLot;
+                                lot.attributes[LotCls.lotUrb] = attr.lotUrb;
                                 break;
                             }
                         }
@@ -403,7 +400,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                             }
                         }
                     }
-                };
+                });
                 return deferred.resolve(lots);
             }).catch(function (err) {
                 return deferred.reject(err);
@@ -418,9 +415,8 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
 
             this.getFeatureSchema(urlPointLots).then(function (pointLot) {
                 lots.forEach(function (lot) {
-                    var pointLotProps = pointLot.clone();
-                    pointLotProps.attributes = _this3.attributeTransfer({
-                        objTarget: pointLotProps.attributes,
+                    pointLot.attributes = _this3.attributeTransfer({
+                        objTarget: pointLot.attributes,
                         objBase: lot.attributes,
                         omitPropsDefault: false,
                         deletePropsDefault: true
@@ -438,9 +434,9 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                                 continue;
                             }
 
-                            var pointLotPropsClone = pointLotProps.clone();
-                            pointLotPropsClone.geometry = graph.geometry;
-                            pointLots.push(pointLotPropsClone);
+                            var pointLotIdx = pointLot.clone();
+                            pointLotIdx.geometry = graph.geometry;
+                            pointLots.push(pointLotIdx);
                         }
                     } catch (err) {
                         _didIteratorError2 = true;
@@ -469,7 +465,6 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             var _this4 = this;
 
             var deferred = new Deferred();
-            var LotCls = new this.Lot();
             var promises = pointLots.map(function (pointLot) {
                 var queryArancelTask = new QueryTask(arancelUrl);
                 var queryArancel = new Query();
@@ -481,17 +476,14 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             });
             all(promises).then(function (arancels) {
                 pointLots.forEach(function (element, index) {
-                    if (element.attributes[LotCls.tipLot] !== 2) {
-
-                        var arancel = arancels[index].features[0].attributes;
-                        pointLots[index].attributes = _this4.attributeTransfer({
-                            objTarget: element.attributes,
-                            objBase: arancel,
-                            updateOnlyNulls: true
-                        });
-                    }
+                    var arancel = arancels[index].features[0].attributes;
+                    pointLots[index].attributes = _this4.attributeTransfer({
+                        objTarget: element.attributes,
+                        objBase: arancel,
+                        updateOnlyNulls: true
+                    });
+                    return deferred.resolve(pointLots);
                 });
-                return deferred.resolve(pointLots);
             }).catch(function (err) {
                 return deferred.reject(err);
             });
@@ -558,15 +550,13 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return ranCpu + "-" + codUi + "-" + codVer;
         },
         generateDirMun: function generateDirMun(tipVia, nomVia, numMun) {
-            return (tipVia || '') + " " + (nomVia || '') + " " + (numMun || '');
+            return tipVia + " " + nomVia + " " + numMun;
         },
         generateDirUrb: function generateDirUrb(tipVia, nomVia, numMun) {
-            return (tipVia || '') + " " + (nomVia || '') + " " + (numMun || '');
+            return tipVia + " " + nomVia + " " + numMun;
         },
         translateFieldsPointLotToLand: function translateFieldsPointLotToLand(pointLots, landUrl, newLandsGraphics) {
             var _this6 = this;
-
-            var codUiValue = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
 
             var deferred = new Deferred();
             var LandCls = new this.Land();
@@ -574,95 +564,39 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
 
             this.getFeatureSchema(landUrl).then(function (land) {
                 newLandsGraphics.forEach(function (landGraphic) {
-                    var attributes = landGraphic.attributes;
-
                     for (i = 0; i < pointLots.length; i++) {
                         // Validate location
                         if (geometryEngine.intersects(landGraphic.geometry, pointLots[i].geometry)) {
                             // Validate attributes lotUrb
-                            if (pointLots[i].attributes.LOT_URB != attributes.urbanLotNumber) {
-                                throw new Error("La solicitud no se puede realizar porque el predio del lote " + attributes.urbanLotNumber + " se asign\xF3 al lote " + pointLots[i].attributes.LOT_URB);
+                            if (pointLots[i].attributes.LOT_URB != landGraphic.urbanLotNumber) {
+                                throw new Error("La solicitud no se puede realizar porque el predio del lote " + landGraphic.urbanLotNumber + " se asign\xF3 al lote " + pointLots[i].attributes.LOT_URB);
                             }
                             var landProps = land.clone();
                             landProps.attributes = _this6.attributeTransfer({
-                                objTarget: landProps.attributes,
+                                objTarget: land.attributes,
                                 objBase: pointLots[i].attributes,
                                 omitPropsDefault: false
                             });
-                            landProps.attributes[LandCls.codPre] = attributes.cpm;
-                            landProps.attributes[LandCls.codUi] = codUiValue || _this6.codUiValue;
+                            landProps.attributes[LandCls.codPre] = landGraphic.codPre;
+                            landProps.attributes[LandCls.codUi] = _this6.codUiValue;
                             landProps.attributes[LandCls.estado] = _this6.estadoValue;
                             landProps.attributes[LandCls.coordX] = landGraphic.geometry.x;
                             landProps.attributes[LandCls.coordY] = landGraphic.geometry.y;
-                            landProps.attributes[LandCls.codVer] = _this6.getValueCodVer(landProps.attributes[LandCls.ranCpu], codUiValue || _this6.codUiValue);
-                            landProps.attributes[LandCls.codCpu] = _this6.generateCodCpu(landProps.attributes[LandCls.ranCpu], landProps.attributes[LandCls.codVer], codUiValue || _this6.codUiValue);
-
-                            landProps.geometry = landGraphic.geometry;
-                            if (attributes.resolutionType === _this6.tipoResolucionValue) {
-                                landProps.attributes[LandCls.partida] = attributes.resolutionDocument;
-                                landProps.attributes[LandCls.estadoPartida] = _this6.estadoPartidaValue;
-                            }
-                            // if (attributes.floor){
-                            landProps.attributes[LandCls.piso] = attributes.floor;
-                            // }
-                            landProps.attributes['ID'] = parseInt(attributes.id.split('_')[1]);
-
-                            if (attributes.tipLot === 2) {
-                                var rightOfWay = attributes.mediterraneanCoords;
-                                if (attributes.mediterraneanCoords.attributes.tipLot) {
-                                    var _iteratorNormalCompletion4 = true;
-                                    var _didIteratorError4 = false;
-                                    var _iteratorError4 = undefined;
-
-                                    try {
-                                        for (var _iterator4 = pointLots[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                                            var pointLot = _step4.value;
-
-                                            if (geometryEngine.intersects(rightOfWay.geometry, pointLot.geometry)) {
-                                                rightOfWay = pointLot;
-                                                break;
-                                            }
-                                        }
-                                    } catch (err) {
-                                        _didIteratorError4 = true;
-                                        _iteratorError4 = err;
-                                    } finally {
-                                        try {
-                                            if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                                                _iterator4.return();
-                                            }
-                                        } finally {
-                                            if (_didIteratorError4) {
-                                                throw _iteratorError4;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                landProps.attributes['ID_ARANC'] = rightOfWay.attributes['ID_ARANC'];
-                                landProps.attributes['COD_VIA'] = rightOfWay.attributes['COD_VIA'];
-                                landProps.attributes['TIP_VIA'] = rightOfWay.attributes['TIP_VIA'];
-                                landProps.attributes['NOM_VIA'] = rightOfWay.attributes['NOM_VIA'];
-                                landProps.attributes['CUADRA'] = rightOfWay.attributes['CUADRA'];
-                                landProps.attributes['LADO'] = rightOfWay.attributes['LADO'];
-                                landProps.attributes['VAL_ACT'] = rightOfWay.attributes['VAL_ACT'];
-                                landProps.attributes['id_lote_sirv'] = rightOfWay.attributes['ID_LOTE'];
-
-                                landProps.attributes['id_lote_puerta'] = rightOfWay.attributes['ID_LOTE'];
-                                landProps.attributes['longitude_puerta'] = rightOfWay.geometry.x;
-                                landProps.attributes['latitude_puerta'] = rightOfWay.geometry.y;
-                                landProps.attributes['lote_urbano_puerta'] = rightOfWay.attributes['LOT_URB'];
-                                landProps.attributes['manzana_urbana_puerta'] = rightOfWay.attributes['MZN_URB'];
-                            }
+                            landProps.attributes[LandCls.codVer] = _this6.getValueCodVer(landProps.attributes[LandCls.ranCpu], _this6.codUiValue);
+                            landProps.attributes[LandCls.codCpu] = _this6.generateCodCpu(landProps.attributes[LandCls.ranCpu], landProps.attributes[LandCls.codVer]);
                             landProps.attributes[LandCls.dirMun] = _this6.generateDirMun(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
                             landProps.attributes[LandCls.dirUrb] = _this6.generateDirUrb(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
 
-                            if (codUiValue) {
-                                codUiValue += 1;
+                            landProps.geometry = landGraphic.geometry;
+                            if (landGraphic.resolutionType === _this6.tipoResolucionValue) {
+                                landProps.attributes[LandCls.partida] = landGraphic.resolutionDocument;
+                                landProps.attributes[LandCls.estadoPartida] = _this6.estadoPartidaValue;
                             }
-
+                            // if (landGraphic.attributes.floor){
+                            landProps.attributes[LandCls.piso] = landGraphic.floor;
+                            // }
+                            landProps.attributes['ID'] = parseInt(landGraphic.id);
                             lands.push(landProps.clone());
-
                             break;
                         }
                     }
@@ -719,25 +653,39 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return deferred.promise;
         },
         getPointLotsOrigin: function getPointLotsOrigin(pointLotUrl, lots) {
+            var query = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
             var queryPointLotsOriginTask = new QueryTask(pointLotUrl);
             var queryPointLotsOrigin = new Query();
             queryPointLotsOrigin.returnGeometry = true;
             queryPointLotsOrigin.outFields = ["*"];
-            queryPointLotsOrigin.geometry = lots.geometry;
-            queryPointLotsOrigin.geometryType = "esriGeometryPolygon";
-            queryPointLotsOrigin.distance = 0.5;
-            queryPointLotsOrigin.units = "meters";
+            if (query) {
+                queryPointLotsOrigin.where = query;
+            } else {
+                queryPointLotsOrigin.geometry = lots.geometry;
+                queryPointLotsOrigin.geometryType = "esriGeometryPolygon";
+                queryPointLotsOrigin.distance = 0.2;
+                queryPointLotsOrigin.units = "meters";
+            }
+
             return queryPointLotsOriginTask.execute(queryPointLotsOrigin);
         },
         getLandsOrigin: function getLandsOrigin(landUrl, lots) {
+            var query = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
             var queryLandsOriginTask = new QueryTask(landUrl);
             var queryLandsOrigin = new Query();
             queryLandsOrigin.returnGeometry = true;
             queryLandsOrigin.outFields = ["*"];
-            queryLandsOrigin.geometry = lots.geometry;
-            queryLandsOrigin.geometryType = "esriGeometryPolygon";
-            queryLandsOrigin.distance = 0.5;
-            queryLandsOrigin.units = "meters";
+            if (query) {
+                queryLandsOrigin.where = query;
+            } else {
+                queryLandsOrigin.geometry = lots.geometry;
+                queryLandsOrigin.geometryType = "esriGeometryPolygon";
+                queryLandsOrigin.distance = 0.2;
+                queryLandsOrigin.units = "meters";
+            }
+
             return queryLandsOriginTask.execute(queryLandsOrigin);
         },
         getLandsOriginByQuery: function getLandsOriginByQuery(landUrl, cpu) {
@@ -759,12 +707,10 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
         updateRowsGeneric: function updateRowsGeneric(features, codRequest, user) {
             var _this7 = this;
 
-            var status = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
-
             var LandCls = new this.Land();
             var LotCls = new this.Lot();
             features.forEach(function (feature) {
-                feature.attributes[LandCls.estado] = status;
+                feature.attributes[LandCls.estado] = 0;
                 feature.attributes[LotCls.fuente] = codRequest;
                 feature.attributes[LotCls.nomUser] = user;
                 feature.attributes[LotCls.nomPc] = _this7.platformUpdate;
@@ -773,10 +719,12 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return features;
         },
         getDataOrigin: function getDataOrigin(pointLotUrl, landUrl, lots) {
+            var queryLots = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
             // const self = this;
             var deferred = new Deferred();
 
-            var promises = [this.getPointLotsOrigin(pointLotUrl, lots), this.getLandsOrigin(landUrl, lots)];
+            var promises = [this.getPointLotsOrigin(pointLotUrl, lots, queryLots), this.getLandsOrigin(landUrl, lots, queryLots)];
 
             all(promises).then(function (results) {
                 // self.currentPoinLotsRows = results[0].features;
@@ -972,27 +920,27 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                 idType: parseInt(caseRequest),
                 idLandInactive: idLandInactive
             };
-            var _iteratorNormalCompletion5 = true;
-            var _didIteratorError5 = false;
-            var _iteratorError5 = undefined;
+            var _iteratorNormalCompletion4 = true;
+            var _didIteratorError4 = false;
+            var _iteratorError4 = undefined;
 
             try {
-                for (var _iterator5 = response.results[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                    var predio = _step5.value;
+                for (var _iterator4 = response.results[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                    var predio = _step4.value;
 
                     predio['ubigeo'] = ubigeo;
                 }
             } catch (err) {
-                _didIteratorError5 = true;
-                _iteratorError5 = err;
+                _didIteratorError4 = true;
+                _iteratorError4 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                        _iterator5.return();
+                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                        _iterator4.return();
                     }
                 } finally {
-                    if (_didIteratorError5) {
-                        throw _iteratorError5;
+                    if (_didIteratorError4) {
+                        throw _iteratorError4;
                     }
                 }
             }
@@ -1032,36 +980,36 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return deferred.promise;
         },
         checkLotsWithinLands: function checkLotsWithinLands(lots, lands) {
-            var _iteratorNormalCompletion6 = true;
-            var _didIteratorError6 = false;
-            var _iteratorError6 = undefined;
+            var _iteratorNormalCompletion5 = true;
+            var _didIteratorError5 = false;
+            var _iteratorError5 = undefined;
 
             try {
-                for (var _iterator6 = lots[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-                    var lot = _step6.value;
+                for (var _iterator5 = lots[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                    var lot = _step5.value;
 
                     var checkLands = [];
-                    var _iteratorNormalCompletion7 = true;
-                    var _didIteratorError7 = false;
-                    var _iteratorError7 = undefined;
+                    var _iteratorNormalCompletion6 = true;
+                    var _didIteratorError6 = false;
+                    var _iteratorError6 = undefined;
 
                     try {
-                        for (var _iterator7 = lands[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-                            var land = _step7.value;
+                        for (var _iterator6 = lands[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                            var land = _step6.value;
 
                             checkLands.push(geometryEngine.intersects(lot.geometry, land.geometry));
                         }
                     } catch (err) {
-                        _didIteratorError7 = true;
-                        _iteratorError7 = err;
+                        _didIteratorError6 = true;
+                        _iteratorError6 = err;
                     } finally {
                         try {
-                            if (!_iteratorNormalCompletion7 && _iterator7.return) {
-                                _iterator7.return();
+                            if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                                _iterator6.return();
                             }
                         } finally {
-                            if (_didIteratorError7) {
-                                throw _iteratorError7;
+                            if (_didIteratorError6) {
+                                throw _iteratorError6;
                             }
                         }
                     }
@@ -1073,16 +1021,16 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                     }
                 }
             } catch (err) {
-                _didIteratorError6 = true;
-                _iteratorError6 = err;
+                _didIteratorError5 = true;
+                _iteratorError5 = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                        _iterator6.return();
+                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                        _iterator5.return();
                     }
                 } finally {
-                    if (_didIteratorError6) {
-                        throw _iteratorError6;
+                    if (_didIteratorError5) {
+                        throw _iteratorError5;
                     }
                 }
             }

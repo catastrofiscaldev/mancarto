@@ -15,7 +15,6 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/reque
         matrixLandDomain: '2',
         caseRequest: null, // @param
         currentLotsRows: null, //@param
-        currentPoinLotsRows: null, //@param
 
 
         getMatrixLand: function getMatrixLand() {
@@ -131,15 +130,11 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/reque
             var _this3 = this;
 
             return this.getUiOfLot().then(function (uiValue) {
-                return UtilityCase.translateFieldsPointLotToLand(_this3.currentPoinLotsRows, _this3.urlLands, _this3.newLands, uiValue);
-            })
-            // .then(uiValue => this.calculateLandFields(uiValue))
-            .then(function (lands) {
+                return _this3.calculateLandFields(uiValue);
+            }).then(function (lands) {
                 return UtilityCase.calculateIdMznC(lands, _this3.cadastralBlockUrl, _this3.ubigeo);
             }).then(function (lands) {
                 return UtilityCase.calculateIdPred(lands, _this3.urlLands, _this3.ubigeo);
-            }).then(function (lands) {
-                return UtilityCase.updateRowsGeneric(lands, _this3.codRequest, _this3.user, 1);
             }).then(function (lands) {
                 _this3.lands = lands;
                 return UtilityCase.addDataNew([], [], lands, _this3.config);

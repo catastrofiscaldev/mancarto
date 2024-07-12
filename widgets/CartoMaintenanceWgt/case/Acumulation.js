@@ -36,6 +36,7 @@ define(["./UtilityCase"], function (UtilityCase) {
 
         // codUiValue: 1,
         queryBlock: null, // @param
+        queryLots: null, // @param
         idLandInactive: null,
 
         executeAcumulation: function executeAcumulation() {
@@ -48,10 +49,8 @@ define(["./UtilityCase"], function (UtilityCase) {
             }).then(function (block) {
                 return UtilityCase.translateFieldsBlockToLot(_this.lotUrl, block, _this.lotGraphic);
             }).then(function (lots) {
-                // const tipLot = UtilityCase.calculateTipLot(this.currentLotsRows);
-                return UtilityCase.calculateFieldsOfLot(_this.lotUrl, lots, _this.ubigeo, _this.codRequests, _this.user, _this.attributes
-                // tipLot
-                );
+                var tipLot = UtilityCase.calculateTipLot(_this.currentLotsRows);
+                return UtilityCase.calculateFieldsOfLot(_this.lotUrl, lots, _this.ubigeo, _this.codRequest, _this.user, _this.attributes, tipLot);
             }).then(function (lots) {
                 _this.lots = lots;
                 return UtilityCase.translateFieldsLotToPointLot(lots, _this.pointLotUrl, _this.newPointLotsGraphics);
@@ -68,7 +67,7 @@ define(["./UtilityCase"], function (UtilityCase) {
                 return UtilityCase.calculateIdPred(lands, _this.landUrl, _this.ubigeo);
             }).then(function (lands) {
                 _this.lands = lands;
-                return UtilityCase.getDataOrigin(_this.pointLotUrl, _this.landUrl, _this.lots[0]);
+                return UtilityCase.getDataOrigin(_this.pointLotUrl, _this.landUrl, _this.lots[0], _this.queryLots);
             }).then(function (results) {
                 _this.currentPoinLotsRows = results[0].features;
                 _this.currentLandsRows = results[1].features;
