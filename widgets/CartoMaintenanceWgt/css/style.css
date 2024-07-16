@@ -526,7 +526,19 @@ p {
   align-self: end;
 }
 
-.btnSendClsCm:hover {
+.btnCancelClsCm {
+  width: 100%;
+  border: none;
+  border-radius: 5px;
+  background-color: #c14242;
+  color: white;
+  height: 30px;
+  margin-top: 10px;
+  align-self: end;
+}
+
+.btnSendClsCm:hover,
+.btnCancelClsCm:hover {
   cursor: pointer;
 }
 
@@ -822,7 +834,7 @@ input[type='file'] {
 }
 
 
-.containerToolDrawClsCm {
+.containerToolClsCm {
   display: none;
   position: fixed;
   z-index: 2;
@@ -838,7 +850,8 @@ input[type='file'] {
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.2);
 }
 
-.containerToolDrawClsCm.active {
+.containerToolDrawClsCm.active,
+.containerHelpRightOfWayClsCm.active {
   display: block;
 }
 

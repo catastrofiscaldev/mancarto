@@ -44,18 +44,6 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
                     _this.currentDistance = 0.00;
                 }
             });
-
-            // document.addEventListener('keyup', (evt) => {
-            //     if (evt.key === 'Escape' && this.statusDraw) {
-            //         this.currentCoordinates = [];
-            //         this.currentDistance = 0.00;
-            //     }
-            // });
-
-            // this.landsFeature = new FeatureLayer(this.lotUrl, {
-            //     mode: FeatureLayer.MODE_ONDEMAND,
-            //     outFields: ["*"]
-            // });
         },
         getUUID: function getUUID() {
             var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -75,21 +63,16 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
             this.addLabelToCenterLine(evt.geometry, this.currentDistance, idLabelGraphic);
             this.measurements[idPolylineGraphic] = {
                 distance: this.currentDistance.toFixed(2),
-                // geometry: evt.geometry,
-                // extent: evt.geometry.getExtent(),
                 idLabel: idLabelGraphic
             };
             this.addRowToTable(this.measurements[idPolylineGraphic], idPolylineGraphic);
             this.map.enableMapNavigation();
             this.map.setInfoWindowOnClick(true);
             this.statusDraw = false;
-            // disable snapping
-            // this.map.disableSnapping();
         },
         activateToolDraw: function activateToolDraw(evt) {
             this.anotherToolbar.deactivate();
             var snapManager = this.map.enableSnapping();
-            // this.map.enableSnapping();
             snapManager.alwaysSnap = true;
 
             var layerInfos = [{
@@ -117,8 +100,6 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
             // console.log(measurementItem);
             var row = '\n                <tr data-idPolyline=' + id + '>\n                    <td class="center-aligned" contenteditable="true" >\n                        ' + measurementItem.distance + '\n                    </td>\n                    <td class="center-aligned">\n                        <i class="fas fa-route"></i>\n                    </td>\n                    <td class="center-aligned">\n                        <span><i class="fas fa-search"></i></span>\n                    </td>\n                    <td class="center-aligned">\n                        <span style="color: #FF5722;"><i class="far fa-trash-alt"></i></span>\n                    </td>\n                </tr>\n            ';
 
-            // const table = this.controlMeasurementTable.querySelector('tbody');
-
             // add function to clic delete row in last column
             this.controlMeasurementTable.insertAdjacentHTML('beforeend', row);
             var deleteRow = this.controlMeasurementTable.querySelector('tr[data-idPolyline="' + id + '"] td:last-child');
@@ -141,10 +122,10 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
         },
         validateNumericInput: function validateNumericInput(evt) {
             var value = evt.target.innerText;
-            var regex = /^[0-9]*\.?[0-9]*$/; // Permite números y un punto decimal
+            var regex = /^[0-9]*\.?[0-9]*$/;
 
             if (!regex.test(value)) {
-                evt.target.innerText = value.slice(0, -1); // Elimina el último carácter si no es válido
+                evt.target.innerText = value.slice(0, -1);
             }
         },
         deleteRowTable: function deleteRowTable(evt) {
@@ -186,16 +167,6 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
             var graphic = this.getGraphicById(idPolyline);
             this.callbackAddLineDivision(graphic.geometry);
             this.deleteRowTable(evt);
-            // if (evt.currentTarget.checked) {
-            //     const graphic = this.getGraphicById(id);
-            //     this.callbackAddLineDivision(graphic.geometry);
-            //     // this.linearDivision.add(graphic);
-            //     // this.map.addLayer(this.linearDivision);
-            // } else {
-            //     const graphic = this.getGraphicById(id);
-
-            //     this.linearDivision.remove(graphic);
-            // }
         },
         getGraphicById: function getGraphicById(id) {
             var graphic = this.map.graphics.graphics.filter(function (graphic) {
@@ -245,18 +216,15 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
             var font = new Font("15px", Font.STYLE_NORMAL, Font.VARIANT_NORMAL, Font.WEIGHT_BOLD, "Arial");
             var txtSym = new TextSymbol(distance.toFixed(2), font, new Color([87, 88, 90, 1]));
             txtSym.setOffset(0, 0).setAlign(TextSymbol.DECORATION_OVERLINE);
-            // //align vertical center
+
             txtSym.setVerticalAlignment("middle");
             txtSym.setHaloColor(new Color([255, 255, 255]));
             txtSym.setHaloSize(4);
 
-            // console.log(geometry, midPoint.geometry.coordinates)
             var angle = this.getAngleByLabel(pointLabel, geometry);
-            // // rotate text symbol
             txtSym.setAngle(angle);
             var graphicLabel = new Graphic(pointLabel, txtSym, { id: idLabelGraphic });
             this.map.graphics.add(graphicLabel);
-            // return idLabelGraphic;
         },
         findMidPoint: function findMidPoint(polyline, distance) {
             var polylineGeomUtm = webMercatorUtils.webMercatorToGeographic(polyline);
@@ -297,9 +265,6 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
                 vertices[vertices.length - 1] = destintation.geometry.coordinates;
             }
 
-            // console.log(vertices);
-            // map.graphics.clear();
-
             polyline = new Polyline({
                 paths: [vertices],
                 spatialReference: polylineGeomUtm.spatialReference
@@ -307,11 +272,6 @@ define(['esri/toolbars/draw', 'esri/graphic', 'esri/symbols/CartographicLineSymb
 
             var response = webMercatorUtils.geographicToWebMercator(polyline);
             return response;
-            // map.graphics.add(new Graphic(a, lineSymbol));
-            // distance = newDistamce;
-            // addLabelToCenter(a, distance);
-            // window.polyline = a;
-            // return vertices;
         },
         removeAllGraphicsIntoMeasurements: function removeAllGraphicsIntoMeasurements() {
             this.controlMeasurementTable.innerHTML = '';

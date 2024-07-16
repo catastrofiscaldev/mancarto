@@ -3,7 +3,7 @@ define(["./UtilityCase"], function (UtilityCase) {
     * @description: Objeto que contiene las funciones para la subdivisión de lotes
     */
     var SubDivision = {
-        codRequest: null, // @params: Código de la solicitud
+        codRequests: null, // @params: Código de la solicitud
         // currentLots: null, // @param: Lotes actuales a modificar
         currentLotsRows: null, // @calculate []: Features de los lotes actuales
         currentPoinLotsRows: null, // @calculate: Features de los puntos de los lotes actuales
@@ -45,8 +45,10 @@ define(["./UtilityCase"], function (UtilityCase) {
             }).then(function (block) {
                 return UtilityCase.translateFieldsBlockToLot(_this.lotUrl, block, _this.lotGraphic);
             }).then(function (lots) {
-                var tipLot = UtilityCase.calculateTipLot(_this.currentLotsRows);
-                return UtilityCase.calculateFieldsOfLot(_this.lotUrl, lots, _this.ubigeo, _this.codRequest, _this.user, _this.attributes, tipLot);
+                // const tipLot = UtilityCase.calculateTipLot(this.currentLotsRows);
+                return UtilityCase.calculateFieldsOfLot(_this.lotUrl, lots, _this.ubigeo, _this.codRequests, _this.user, _this.attributes
+                // tipLot
+                );
             }).then(function (lots) {
                 _this.lots = lots;
                 return UtilityCase.translateFieldsLotToPointLot(lots, _this.pointLotUrl, _this.newPointLotsGraphics);
