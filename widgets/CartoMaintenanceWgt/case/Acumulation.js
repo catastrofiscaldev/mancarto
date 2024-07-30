@@ -42,7 +42,9 @@ define(["./UtilityCase"], function (UtilityCase) {
         executeAcumulation: function executeAcumulation() {
             var _this = this;
 
-            return UtilityCase.getBlockFromLot(this.lotGraphic[0].geometry, this.blockUrl).then(function (block) {
+            return UtilityCase.checkResolutionDocument(this.newLandsGraphics, this.ubigeo, this.landUrl).then(function () {
+                return UtilityCase.getBlockFromLot(_this.lotGraphic[0].geometry, _this.blockUrl);
+            }).then(function (block) {
                 return UtilityCase.checkExistLotUrban(_this.attributes, block, _this.lotUrl, _this.currentLotsRows, _this.ubigeo);
             }).then(function (block) {
                 return UtilityCase.checkExistLotUrbanIntoLotsOriginal(_this.attributes, _this.currentLotsRows, block);
