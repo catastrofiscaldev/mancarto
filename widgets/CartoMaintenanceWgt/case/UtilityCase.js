@@ -210,6 +210,41 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
 
             return deferred.promise;
         },
+        checkResolutionDocument: function checkResolutionDocument(newLandsGraphics, ubigeo, urlLand) {
+            var _this = this;
+
+            var deferred = new Deferred();
+            var LandCls = new this.Land();
+            var resolutionDocument = [];
+            newLandsGraphics.map(function (land) {
+                if (land.attributes.resolutionType === _this.tipoResolucionValue) {
+                    resolutionDocument.push(land.attributes.resolutionDocument);
+                }
+            });
+            var queryLand = new Query();
+            queryLand.where = LandCls.partida + " in ('" + resolutionDocument.join("','") + "') and " + LandCls.ubigeo + " = '" + ubigeo + "' and " + LandCls.estado + " = " + this.estadoValue;
+            queryLand.returnGeometry = false;
+            queryLand.outFields = [LandCls.partida, LandCls.codCpu];
+            var queryTaskLand = new QueryTask(urlLand);
+            queryTaskLand.execute(queryLand).then(function (response) {
+                if (response.features.length > 0) {
+                    var partidas = response.features.map(function (land) {
+                        return land.attributes[LandCls.partida];
+                    });
+                    var commonElements = resolutionDocument.filter(function (partida) {
+                        return partida.includes(partidas);
+                    });
+                    // if (commonElements.length > 0) {
+                    var err = new Error("La solicitud no se puede realizar porque se detectaron n\xFAmeros de partida que ya est\xE1n asignados a otros predios en el Catastro Fiscal.\nPartidas existentes: " + commonElements);
+                    return deferred.reject(err);
+                    // }
+                }
+                return deferred.resolve();
+            }).catch(function (err) {
+                return deferred.reject(err);
+            });
+            return deferred.promise;
+        },
         checkExistLotUrban: function checkExistLotUrban(attributes, block, urlLots, currentLots, ubigeo) {
             var deferred = new Deferred();
             var LotCls = new this.Lot();
@@ -296,14 +331,14 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return repeatedElements;
         },
         translateFieldsBlockToLot: function translateFieldsBlockToLot(url, block, lotsResults) {
-            var _this = this;
+            var _this2 = this;
 
             var deferred = new Deferred();
             var LotCls = new this.Lot();
             this.getFeatureSchema(url).then(function (lot) {
                 var lots = lotsResults.map(function (graphic) {
                     var lotIdx = lot.clone();
-                    lotIdx.attributes = _this.attributeTransfer({
+                    lotIdx.attributes = _this2.attributeTransfer({
                         objTarget: lotIdx.attributes,
                         objBase: block.attributes
                     });
@@ -327,7 +362,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return tipLot;
         },
         calculateFieldsOfLot: function calculateFieldsOfLot(lotUrl, lots, ubigeo, codRequests, user, attributes) {
-            var _this2 = this;
+            var _this3 = this;
 
             var deferred = new Deferred();
             var LotCls = new this.Lot();
@@ -367,10 +402,10 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                     lots[idx].attributes[LotCls.ranCpu] = response.features[0].attributes[statDefRanCpu.outStatisticFieldName] + idx + 1;
                     lots[idx].attributes[LotCls.anoCart] = new Date().getFullYear();
                     lots[idx].attributes[LotCls.fuente] = codRequests;
-                    lots[idx].attributes[LotCls.nomPc] = _this2.platformUpdate;
+                    lots[idx].attributes[LotCls.nomPc] = _this3.platformUpdate;
                     lots[idx].attributes[LotCls.nomUser] = user;
                     // lot.attributes[LotCls.tipLot] = tipLot;
-                    lots[idx].attributes[LotCls.estadoIns] = _this2.estadoInsValue;
+                    lots[idx].attributes[LotCls.estadoIns] = _this3.estadoInsValue;
 
                     var _iteratorNormalCompletion = true;
                     var _didIteratorError = false;
@@ -411,7 +446,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return deferred.promise;
         },
         translateFieldsLotToPointLot: function translateFieldsLotToPointLot(lots, urlPointLots, newPointLotsGraphics) {
-            var _this3 = this;
+            var _this4 = this;
 
             var deferred = new Deferred();
             var pointLots = [];
@@ -419,7 +454,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             this.getFeatureSchema(urlPointLots).then(function (pointLot) {
                 lots.forEach(function (lot) {
                     var pointLotProps = pointLot.clone();
-                    pointLotProps.attributes = _this3.attributeTransfer({
+                    pointLotProps.attributes = _this4.attributeTransfer({
                         objTarget: pointLotProps.attributes,
                         objBase: lot.attributes,
                         omitPropsDefault: false,
@@ -466,7 +501,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return deferred.promise;
         },
         translateFieldsArancelToPointLot: function translateFieldsArancelToPointLot(pointLots, arancelUrl) {
-            var _this4 = this;
+            var _this5 = this;
 
             var deferred = new Deferred();
             var LotCls = new this.Lot();
@@ -477,18 +512,21 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                 queryArancel.outFields = ["*"];
                 queryArancel.geometry = pointLot.geometry;
                 queryArancel.geometryType = "esriGeometryPoint";
+                // queryArancel.distance = 0.25;
+                // queryArancel.units = "meters";
                 return queryArancelTask.execute(queryArancel);
             });
             all(promises).then(function (arancels) {
                 pointLots.forEach(function (element, index) {
                     if (element.attributes[LotCls.tipLot] !== 2) {
-
+                        var attributes = element.clone().attributes;
                         var arancel = arancels[index].features[0].attributes;
-                        pointLots[index].attributes = _this4.attributeTransfer({
-                            objTarget: element.attributes,
+                        pointLots[index].attributes = _this5.attributeTransfer({
+                            objTarget: attributes,
                             objBase: arancel,
                             updateOnlyNulls: true
                         });
+                        console.log(pointLots[index].attributes);
                     }
                 });
                 return deferred.resolve(pointLots);
@@ -498,7 +536,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return deferred.promise;
         },
         calculateFieldsOfPointLot: function calculateFieldsOfPointLot(pointLotUrl, ubigeo, pointLots) {
-            var _this5 = this;
+            var _this6 = this;
 
             var deferred = new Deferred();
             var PointLotCls = new this.PointLot();
@@ -527,7 +565,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
 
                         _i.attributes[PointLotCls.secuen] = secuen;
                         _i.attributes[PointLotCls.idLote] = "" + _i.attributes[PointLotCls.zonaUtm] + ubigeo + secuen;
-                        _i.attributes[PointLotCls.estadoIns] = _this5.estadoInsValue;
+                        _i.attributes[PointLotCls.estadoIns] = _this6.estadoInsValue;
                         secuen += 1;
                     }
                 } catch (err) {
@@ -564,7 +602,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return (tipVia || '') + " " + (nomVia || '') + " " + (numMun || '');
         },
         translateFieldsPointLotToLand: function translateFieldsPointLotToLand(pointLots, landUrl, newLandsGraphics) {
-            var _this6 = this;
+            var _this7 = this;
 
             var codUiValue = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
 
@@ -584,23 +622,23 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                                 throw new Error("La solicitud no se puede realizar porque el predio del lote " + attributes.urbanLotNumber + " se asign\xF3 al lote " + pointLots[i].attributes.LOT_URB);
                             }
                             var landProps = land.clone();
-                            landProps.attributes = _this6.attributeTransfer({
+                            landProps.attributes = _this7.attributeTransfer({
                                 objTarget: landProps.attributes,
                                 objBase: pointLots[i].attributes,
                                 omitPropsDefault: false
                             });
                             landProps.attributes[LandCls.codPre] = attributes.cpm;
-                            landProps.attributes[LandCls.codUi] = codUiValue || _this6.codUiValue;
-                            landProps.attributes[LandCls.estado] = _this6.estadoValue;
+                            landProps.attributes[LandCls.codUi] = codUiValue || _this7.codUiValue;
+                            landProps.attributes[LandCls.estado] = _this7.estadoValue;
                             landProps.attributes[LandCls.coordX] = landGraphic.geometry.x;
                             landProps.attributes[LandCls.coordY] = landGraphic.geometry.y;
-                            landProps.attributes[LandCls.codVer] = _this6.getValueCodVer(landProps.attributes[LandCls.ranCpu], codUiValue || _this6.codUiValue);
-                            landProps.attributes[LandCls.codCpu] = _this6.generateCodCpu(landProps.attributes[LandCls.ranCpu], landProps.attributes[LandCls.codVer], codUiValue || _this6.codUiValue);
+                            landProps.attributes[LandCls.codVer] = _this7.getValueCodVer(landProps.attributes[LandCls.ranCpu], codUiValue || _this7.codUiValue);
+                            landProps.attributes[LandCls.codCpu] = _this7.generateCodCpu(landProps.attributes[LandCls.ranCpu], landProps.attributes[LandCls.codVer], codUiValue || _this7.codUiValue);
 
                             landProps.geometry = landGraphic.geometry;
-                            if (attributes.resolutionType === _this6.tipoResolucionValue) {
+                            if (attributes.resolutionType === _this7.tipoResolucionValue) {
                                 landProps.attributes[LandCls.partida] = attributes.resolutionDocument;
-                                landProps.attributes[LandCls.estadoPartida] = _this6.estadoPartidaValue;
+                                landProps.attributes[LandCls.estadoPartida] = _this7.estadoPartidaValue;
                             }
                             // if (attributes.floor){
                             landProps.attributes[LandCls.piso] = attributes.floor;
@@ -654,8 +692,8 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                                 landProps.attributes['lote_urbano_puerta'] = rightOfWay.attributes['LOT_URB'];
                                 landProps.attributes['manzana_urbana_puerta'] = rightOfWay.attributes['MZN_URB'];
                             }
-                            landProps.attributes[LandCls.dirMun] = _this6.generateDirMun(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
-                            landProps.attributes[LandCls.dirUrb] = _this6.generateDirUrb(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
+                            landProps.attributes[LandCls.dirMun] = _this7.generateDirMun(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
+                            landProps.attributes[LandCls.dirUrb] = _this7.generateDirUrb(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
 
                             if (codUiValue) {
                                 codUiValue += 1;
@@ -683,6 +721,10 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             queryCadastralBlock.returnGeometry = true;
             queryCadastralBlock.outFields = [LandCls.idMznC];
             queryCadastralBlock.geometry = lands[0].geometry;
+            queryCadastralBlock.geometryType = "esriGeometryPoint";
+
+            queryCadastralBlock.distance = 0.25;
+            queryCadastralBlock.units = "meters";
 
             queryCadastralBlockTask.execute(queryCadastralBlock).then(function (response) {
                 lands.forEach(function (land) {
@@ -719,25 +761,39 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return deferred.promise;
         },
         getPointLotsOrigin: function getPointLotsOrigin(pointLotUrl, lots) {
+            var query = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
             var queryPointLotsOriginTask = new QueryTask(pointLotUrl);
             var queryPointLotsOrigin = new Query();
             queryPointLotsOrigin.returnGeometry = true;
             queryPointLotsOrigin.outFields = ["*"];
-            queryPointLotsOrigin.geometry = lots.geometry;
-            queryPointLotsOrigin.geometryType = "esriGeometryPolygon";
-            queryPointLotsOrigin.distance = 0.5;
-            queryPointLotsOrigin.units = "meters";
+            if (query) {
+                queryPointLotsOrigin.where = query;
+            } else {
+                queryPointLotsOrigin.geometry = lots.geometry;
+                queryPointLotsOrigin.geometryType = "esriGeometryPolygon";
+                queryPointLotsOrigin.distance = 0.2;
+                queryPointLotsOrigin.units = "meters";
+            }
+
             return queryPointLotsOriginTask.execute(queryPointLotsOrigin);
         },
         getLandsOrigin: function getLandsOrigin(landUrl, lots) {
+            var query = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : null;
+
             var queryLandsOriginTask = new QueryTask(landUrl);
             var queryLandsOrigin = new Query();
             queryLandsOrigin.returnGeometry = true;
             queryLandsOrigin.outFields = ["*"];
-            queryLandsOrigin.geometry = lots.geometry;
-            queryLandsOrigin.geometryType = "esriGeometryPolygon";
-            queryLandsOrigin.distance = 0.5;
-            queryLandsOrigin.units = "meters";
+            if (query) {
+                queryLandsOrigin.where = query;
+            } else {
+                queryLandsOrigin.geometry = lots.geometry;
+                queryLandsOrigin.geometryType = "esriGeometryPolygon";
+                queryLandsOrigin.distance = 0.2;
+                queryLandsOrigin.units = "meters";
+            }
+
             return queryLandsOriginTask.execute(queryLandsOrigin);
         },
         getLandsOriginByQuery: function getLandsOriginByQuery(landUrl, cpu) {
@@ -757,7 +813,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return deferred.promise;
         },
         updateRowsGeneric: function updateRowsGeneric(features, codRequest, user) {
-            var _this7 = this;
+            var _this8 = this;
 
             var status = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 0;
 
@@ -767,16 +823,18 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                 feature.attributes[LandCls.estado] = status;
                 feature.attributes[LotCls.fuente] = codRequest;
                 feature.attributes[LotCls.nomUser] = user;
-                feature.attributes[LotCls.nomPc] = _this7.platformUpdate;
+                feature.attributes[LotCls.nomPc] = _this8.platformUpdate;
                 feature.attributes[LotCls.anoCart] = new Date().getFullYear();
             });
             return features;
         },
         getDataOrigin: function getDataOrigin(pointLotUrl, landUrl, lots) {
+            var queryLots = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
             // const self = this;
             var deferred = new Deferred();
 
-            var promises = [this.getPointLotsOrigin(pointLotUrl, lots), this.getLandsOrigin(landUrl, lots)];
+            var promises = [this.getPointLotsOrigin(pointLotUrl, lots, queryLots), this.getLandsOrigin(landUrl, lots, queryLots)];
 
             all(promises).then(function (results) {
                 // self.currentPoinLotsRows = results[0].features;

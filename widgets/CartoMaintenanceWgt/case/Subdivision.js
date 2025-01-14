@@ -33,11 +33,14 @@ define(["./UtilityCase"], function (UtilityCase) {
         // PointLotCls: new UtilityCase.PointLot(),
         caseRequest: null, // @param
         queryBlock: null, // @param
+        queryLots: null, // @param
 
         executeSubdivision: function executeSubdivision() {
             var _this = this;
 
-            return UtilityCase.getBlockFromLot(this.currentLotsRows[0].geometry, this.blockUrl).then(function (block) {
+            return UtilityCase.checkResolutionDocument(this.newLandsGraphics, this.ubigeo, this.landUrl).then(function () {
+                return UtilityCase.getBlockFromLot(_this.currentLotsRows[0].geometry, _this.blockUrl);
+            }).then(function (block) {
                 return UtilityCase.checkExistLotUrban(_this.attributes, block, _this.lotUrl, _this.currentLotsRows, _this.ubigeo);
             }).then(function (block) {
                 return UtilityCase.checkExistLotUrbanIntoLotsOriginal(_this.attributes, _this.currentLotsRows, block);
@@ -64,7 +67,7 @@ define(["./UtilityCase"], function (UtilityCase) {
                 return UtilityCase.calculateIdPred(lands, _this.landUrl, _this.ubigeo);
             }).then(function (lands) {
                 _this.lands = lands;
-                return UtilityCase.getDataOrigin(_this.pointLotUrl, _this.landUrl, _this.currentLotsRows[0]);
+                return UtilityCase.getDataOrigin(_this.pointLotUrl, _this.landUrl, _this.currentLotsRows[0], _this.queryLots);
             }).then(function (results) {
                 _this.currentPoinLotsRows = results[0].features;
                 _this.currentLandsRows = results[1].features;

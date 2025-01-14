@@ -130,7 +130,9 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/reque
         executeIndependence: function executeIndependence() {
             var _this3 = this;
 
-            return this.getUiOfLot().then(function (uiValue) {
+            return UtilityCase.checkResolutionDocument(this.newLands, this.ubigeo, this.urlLands).then(function () {
+                return _this3.getUiOfLot();
+            }).then(function (uiValue) {
                 return UtilityCase.translateFieldsPointLotToLand(_this3.currentPoinLotsRows, _this3.urlLands, _this3.newLands, uiValue);
             })
             // .then(uiValue => this.calculateLandFields(uiValue))

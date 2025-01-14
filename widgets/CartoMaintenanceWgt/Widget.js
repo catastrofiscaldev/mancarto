@@ -251,6 +251,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     pointLotsNotMediterrnean: null,
     currentLandDraw: null,
     currentRightOfWayDraw: null,
+    limitAnother: 10000,
     postCreate: function postCreate() {
       this.inherited(arguments);
       // this._getAllLayers();
@@ -518,18 +519,20 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       return selfCm._zoomToPredSelected(cup);
     },
     _handleFeatureSelected: function _handleFeatureSelected(feature) {
-      var featureSelected = new GraphicsLayer({
-        id: idGraphicPredioSelectedCm
-      });
-      feature[0].setSymbol(symbolPredioSelected);
-      featureSelected.add(feature[0]);
-      selfCm.map.addLayer(featureSelected);
-      selfCm.map.centerAt(feature[0].geometry);
+      selfCm.map.setZoom(23).then(function () {
+        var featureSelected = new GraphicsLayer({
+          id: idGraphicPredioSelectedCm
+        });
+        feature[0].setSymbol(symbolPredioSelected);
+        featureSelected.add(feature[0]);
+        selfCm.map.addLayer(featureSelected);
+        selfCm.map.centerAt(feature[0].geometry);
 
-      setTimeout(function () {
-        // clearInterval(interval);
-        selfCm._removeLayerGraphic(idGraphicPredioSelectedCm);
-      }, 1000);
+        return setTimeout(function () {
+          // clearInterval(interval);
+          selfCm._removeLayerGraphic(idGraphicPredioSelectedCm);
+        }, 1000);
+      });
     },
     _zoomToPredSelected: function _zoomToPredSelected(cup) {
       selfCm.busyIndicator.show();
@@ -744,9 +747,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _requestCaseInfo: function _requestCaseInfo() {
       selfCm.busyIndicator.show();
-      var urlResults = selfCm.config.resultsByApplication + '/' + selfCm.codRequestsCm;
+      var urlResults = selfCm.config.resultsByApplication + '/' + selfCm.codRequestsCm + '?limit=' + selfCm.limitAnother;
       var urlDocSupport = selfCm.config.applicationListUrl + '/' + selfCm.codRequestsCm;
-      var urlAffectedLands = selfCm.config.affectedLands + '/' + selfCm.codRequestsCm;
+      var urlAffectedLands = selfCm.config.affectedLands + '/' + selfCm.codRequestsCm + '?limit=' + selfCm.limitAnother;
 
       Promise.all([selfCm._getOriginalData(selfCm.codRequestsCm), fetch(urlResults).then(function (response) {
         if (!response.ok) {
@@ -966,7 +969,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _FormResult: function _FormResult(id_solicitud, caseCm) {
       selfCm.busyIndicator.show();
-      var urlPredioResults = selfCm.config.resultsByApplication + '/' + id_solicitud;
+      var urlPredioResults = selfCm.config.resultsByApplication + '/' + id_solicitud + '?limit=' + selfCm.limitAnother;
       if (caseCm == Deactivate.nameCase) {
         selfCm.busyIndicator.hide();
         selfCm._showMessage(selfCm.nls.resultDeactivate);
@@ -1380,7 +1383,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       // Agregar el `LayerInfo` al mapa y habilitar el snapping
       selfCm.map.enableSnapping({
         layerInfos: layerInfos, // Agregar el `LayerInfo` al mapa
-        alwaysSnap: true,
+        alwaysSnap: false,
         snapPointSymbol: symbolSnapPointCm,
         tolerance: 0
       });
@@ -1793,7 +1796,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm.responseRequests.forEach(function (predio, idx) {
         var tr = dojo.create('tr');
         tr.id = 'predio_' + predio['id'];
-        var row = '<td class="center-aligned">' + (idx + 1) + '</td>\n                  <td>' + predio['address'] + '</td>\n                  <td class="center-aligned">\n                   <span \n                    id="' + tr.id + '_draw"\n                    data-cpm=' + predio['cpm'] + ' \n                    data-resolutionType=' + predio['resolutionType'] + ' \n                    data-resolutionDocument=' + predio['resolutionDocument'] + '\n                    data-floor=' + predio['floor'] + '\n                    data-urbanLotNumber=' + predio['urbanLotNumber'] + '\n                   >\n                      <i class="fas fa-map-marker-alt"></i>\n                   </span>\n                  </td>';
+        var row = '<td class="center-aligned">' + (idx + 1) + '</td>\n                  <td>' + predio['address'] + '</td>\n                  <td class="center-aligned">\n                   <span \n                    id="' + tr.id + '_draw"\n                    data-cpm="' + predio['cpm'] + '" \n                    data-resolutionType="' + predio['resolutionType'] + '"\n                    data-resolutionDocument="' + predio['resolutionDocument'] + '"\n                    data-floor="' + predio['floor'] + '"\n                    data-urbanLotNumber="' + predio['urbanLotNumber'] + '"\n                   >\n                      <i class="fas fa-map-marker-alt"></i>\n                   </span>\n                  </td>';
         tr.innerHTML = row;
         tr.style.cursor = "pointer";
         bodyTable.appendChild(tr);
@@ -2290,7 +2293,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
               var idxNotMediterranean = nonIntersectedPolygons.indexOf(lote);
               if (idxNotMediterranean > -1) {
                 nonIntersectedPolygons.splice(idxNotMediterranean, 1);
-                graphicLayerLotPreview.graphics[idxNotMediterranean].attributes.tipLot = 1;
+                var idxLotPreview = graphicLayerLotPreview.graphics.indexOf(lote);
+                graphicLayerLotPreview.graphics[idxLotPreview].attributes.tipLot = 1;
+                // graphicLayerLotPreview.graphics[idxNotMediterranean].attributes.tipLot = 1
               };
 
               var itcFrentesByLotes = geometryEngine.intersect(frentes[idx], lote.geometry);
@@ -2575,6 +2580,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           Acumulation.user = paramsApp['username'];
           Acumulation.caseRequest = self.case;
           Acumulation.queryBlock = self.arancel;
+          Acumulation.queryLots = self.lotesQuery;
 
           Acumulation.executeAcumulation().then(function (response) {
             // self._removeLayerGraphic(idGraphicPredioCm);
@@ -2723,6 +2729,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           SubDivision.user = paramsApp['username'];
           SubDivision.caseRequest = _this4.case;
           SubDivision.codRequests = _this4.codRequestsCm;
+          SubDivision.queryLots = _this4.lotesQuery;
 
           SubDivision.executeSubdivision().then(function (response) {
             graphicLayerPredioByMaintenance.clear();
