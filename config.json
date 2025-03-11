@@ -11,7 +11,7 @@
       "blue",
       "yellow"
     ],
-    "version": "2.26",
+    "version": "2.30",
     "sharedTheme": {
       "isPortalSupport": false,
       "useHeader": false,
@@ -38,7 +38,7 @@
           "height": 40,
           "relativeTo": "browser"
         },
-        "version": "2.26",
+        "version": "2.30",
         "id": "themes_JewelryBoxTheme_widgets_HeaderController_Widget_40",
         "name": "HeaderController"
       },
@@ -49,7 +49,7 @@
           "bottom": 25,
           "relativeTo": "map"
         },
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_Scalebar_Widget_41",
         "name": "Scalebar"
       },
@@ -60,7 +60,7 @@
           "top": 5,
           "relativeTo": "map"
         },
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_Search_Widget_42",
         "name": "Search"
       },
@@ -71,7 +71,7 @@
           "bottom": 5,
           "relativeTo": "map"
         },
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_Coordinate_Widget_43",
         "name": "Coordinate"
       },
@@ -109,7 +109,7 @@
           "bottom": 0,
           "relativeTo": "map"
         },
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_OverviewMap_Widget_47",
         "name": "OverviewMap"
       },
@@ -120,7 +120,7 @@
           "top": 75,
           "relativeTo": "map"
         },
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_HomeButton_Widget_48",
         "name": "HomeButton"
       },
@@ -131,13 +131,13 @@
           "top": 110,
           "relativeTo": "map"
         },
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_MyLocation_Widget_49",
         "name": "MyLocation"
       },
       {
         "uri": "widgets/AttributeTable/Widget",
-        "version": "2.26",
+        "version": "2.30",
         "position": {
           "relativeTo": "browser"
         },
@@ -152,7 +152,7 @@
         "position": {
           "relativeTo": "browser"
         },
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_Splash_Widget_51",
         "name": "Splash"
       },
@@ -163,7 +163,7 @@
           "left": 7,
           "relativeTo": "map"
         },
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_ZoomSlider_Widget_52",
         "name": "ZoomSlider"
       },
@@ -175,7 +175,7 @@
           "left": 7,
           "relativeTo": "map"
         },
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_ExtentNavigate_Widget_53",
         "name": "ExtentNavigate"
       },
@@ -187,7 +187,7 @@
           "top": 8,
           "relativeTo": "map"
         },
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_FullScreen_Widget_54",
         "name": "FullScreen"
       }
@@ -260,21 +260,21 @@
     "widgets": [
       {
         "uri": "widgets/Legend/Widget",
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_Legend_Widget_18",
         "name": "Legend",
         "index": 2
       },
       {
         "uri": "widgets/LayerList/Widget",
-        "version": "2.26",
+        "version": "2.30",
         "id": "widgets_LayerList_Widget_19",
         "name": "LayerList",
         "index": 3
       },
       {
         "name": "BasemapGallery",
-        "version": "2.26",
+        "version": "2.30",
         "uri": "widgets/BasemapGallery/Widget",
         "config": "configs/BasemapGallery/config_widgets_BasemapGallery_Widget_38.json",
         "index": 4,
@@ -462,7 +462,7 @@
       "height": 10
     }
   },
-  "wabVersion": "2.26",
+  "wabVersion": "2.30",
   "isTemplateApp": true,
   "isWebTier": false,
   "httpProxy": {

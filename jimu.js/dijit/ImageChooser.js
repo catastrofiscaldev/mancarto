@@ -242,13 +242,13 @@ define([
           return;
         }
 
-        var maxSize = this.maxSize * 1024;
-        utils.file.readFile(evt, 'image/*', maxSize, lang.hitch(this, function (err, fileName, fileData) {
+        var maxSizeByte = this.maxSize * 1024;
+        utils.file.readFile(evt, 'image/*', maxSizeByte, lang.hitch(this, function (err, fileName, fileData) {
           /*jshint unused: false*/
           if (err) {
             var message = this.nls[err.errCode];
             if (err.errCode === 'exceed') {
-              message = message.replace('1024', maxSize / 1024);
+              message = message.replace("${size}", utils.localizeNumber(this.maxSize)); // KB
             }
             this._newMessage(message);
           } else {

@@ -483,7 +483,7 @@ define({
     "unknowError": "impossível completar operações",
     "invalidType": "Tipo de ficheiro inválido.",
     "cropImage": "Recortar Imagem",
-    "exceed": "O tamanho do ficheiro não pode exceder 1024 KB",
+    "exceed": "O tamanho do ficheiro não pode ser superior a ${size} KB",
     "enableFlash": "Por favor, ative o Adobe Flash antes de navegar até uma imagem.",
     "cropWaining": "Por favor escolha uma fotografa que tenha pelo menos ${width} x ${height} pixels.",
     "toolTip": "Para obter melhores resultados, a imagem deverá ter ${width} pixéis de largura por ${height} pixéis de altura. Outros tamanhos serão ajustados para caberem. Os formatos de imagem aceitáveis são: PNG, GIF e JPEG."

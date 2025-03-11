@@ -483,7 +483,7 @@ define({
     "unknowError": "작업을 완료할 수 없음",
     "invalidType": "잘못된 파일 유형입니다.",
     "cropImage": "이미지 자르기",
-    "exceed": "파일 크기는 1024KB를 넘을 수 없습니다.",
+    "exceed": "파일 크기는 ${size}KB를 초과할 수 없음",
     "enableFlash": "이미지를 찾아보려면 먼저 Adobe Flash를 활성화하세요.",
     "cropWaining": "${width} x ${height} 픽셀 이상의 사진을 선택하세요.",
     "toolTip": "최상의 결과를 얻으려면 이미지의 폭은 ${width}픽셀, 높이는 ${height}픽셀이어야 합니다. 그 밖의 다른 크기는 맞게 조정됩니다. PNG, GIF 및 JPEG 형식의 이미지를 사용할 수 있습니다."

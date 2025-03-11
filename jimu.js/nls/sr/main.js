@@ -483,7 +483,7 @@ define({
     "unknowError": "završetak operacija nije moguć",
     "invalidType": "Nevažeći tip datoteke.",
     "cropImage": "Izreži snimak",
-    "exceed": "Veličina datoteke ne može da premaši 1024 KB",
+    "exceed": "Veličina datoteke ne može da prekorači ${size} KB",
     "enableFlash": "Omogućite Adobe Flash pre nego što potražite snimak.",
     "cropWaining": "Odaberite fotografiju čije su dimenzije najmanje ${width} x ${height} piksela.",
     "toolTip": "Za najbolje rezultate, snimak treba da bude ${width} piksela širok i ${height} piksela visok. Ostale veličine će biti prilagođene da se uklope. Prihvatljivi formati snimaka su: PNG, GIF i JPEG."

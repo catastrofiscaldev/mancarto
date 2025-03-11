@@ -483,7 +483,7 @@ define({
     "unknowError": "kan de bewerkingen niet voltooien",
     "invalidType": "Ongeldig bestandstype.",
     "cropImage": "Afbeelding bijsnijden",
-    "exceed": "Bestandsgrootte mag niet groter zijn dan 1024 KB",
+    "exceed": "Bestandsgrootte mag niet groter zijn dan ${size} KB",
     "enableFlash": "Schakel Adobe Flash in alvorens te bladeren naar een afbeelding.",
     "cropWaining": "Kies een foto die minstens ${width}x ${height} pixels is.",
     "toolTip": "Voor de beste weergave moet de afbeelding ${width} pixels breed en ${height} pixels hoog zijn. Andere formaten worden passend gemaakt. Aanvaardbare afbeeldingsindelingen zijn: PNG, GIF en JPEG."

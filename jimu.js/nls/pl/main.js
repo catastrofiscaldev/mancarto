@@ -483,7 +483,7 @@ define({
     "unknowError": "nie można zakończyć czynności",
     "invalidType": "Nieprawidłowy typ plików",
     "cropImage": "Przytnij obraz",
-    "exceed": "Rozmiar pliku nie może przekraczać 1024 KB",
+    "exceed": "Rozmiar pliku nie może przekraczać ${size} KB",
     "enableFlash": "Włącz aplikację Adobe Flash przed przejściem do obrazu.",
     "cropWaining": "Proszę wybrać zdjęcie o minimalnych wymiarach ${width} x ${height} pikseli.",
     "toolTip": "W celu uzyskania najlepszych wyników obraz powinien mieć szerokość ${width} pikseli i wysokość ${height} pikseli.  Inne wielkości zostaną dopasowane.  Akceptowane formaty obrazów:  PNG, GIF i JPEG."
@@ -713,7 +713,7 @@ define({
     "reportDimensionsMsg": "Ten raport jest zaprojektowany do wydrukowania na papierze w rozmiarze: ${paperSize}",
     "unableToPrintMapMsg": "Wystąpił błąd podczas drukowania map.",
     "notesHint": "Tutaj wprowadź komentarze",
-    "landscape": "Krajobraz",
+    "landscape": "Poziomo",
     "portrait": "Pionowo",
     "mapOnly": "MAP_ONLY",
     "a0": "A0",

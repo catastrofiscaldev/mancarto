@@ -397,7 +397,7 @@ define([
         html.empty(this.dynamicLinksNode);
         array.forEach(links, function(link) {
           html.create('a', {
-            href: link.url,
+            href: utils.dynamicLinkXssFilter(link.url),
             target: '_blank',
             rel: 'noopener noreferrer',
             innerHTML: utils.sanitizeHTML(link.label) + '<div class="screen-readers-only-no-position">' + window.jimuNls.common.opensInNewWindow + '</div>',

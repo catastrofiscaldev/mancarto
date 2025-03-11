@@ -483,7 +483,7 @@ define({
     "unknowError": "nem sikerült befejezni a műveleteket",
     "invalidType": "Érvénytelen fájltípus.",
     "cropImage": "Kép körülvágása",
-    "exceed": "A fájl mérete legfeljebb 1024 kB lehet",
+    "exceed": "A fájl mérete legfeljebb ${size} kB lehet",
     "enableFlash": "Engedélyezze az Adobe Flash alkalmazást, mielőtt képeket tallózna.",
     "cropWaining": "Válasszon legalább ${width} x ${height} pixel méretű fotót.",
     "toolTip": "A legjobb eredmény érdekében a kép ${width} pixel széles és ${height} pixel magas legyen. Ettől eltérő méret esetén a rendszer átméretezi a képet. Elfogadott képformátumok: PNG, GIF és JPEG."

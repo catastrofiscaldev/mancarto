@@ -284,15 +284,16 @@ function(array, declare, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, 
       return def;
     },
 
-    //resolve a FeasureSet object, maybe resolve null
-    //if silent is true, it won't show message box
-    getFeatureSet: function(silent){
+    // resolve a FeasureSet object, maybe resolve null
+    // if silent is true, it won't show message box, the default value is false
+    // if doNotQueryServerToGetAllFeatures is true, the dijit will not query server to get all features, the default value is false
+    getFeatureSet: function(silent, doNotQueryServerToGetAllFeatures) {
       var def = new Deferred();
       var featureSet = null;
       var info = this._getSelectedLayerInfomation();
       var layer = info.layer;
       if(layer){
-        this._getFeatures(silent).then(lang.hitch(this, function(features){
+        this._getFeatures(silent, doNotQueryServerToGetAllFeatures).then(lang.hitch(this, function(features){
           featureSet = jimuUtils.getFeatureSetByLayerAndFeatures(layer, features);
           def.resolve(featureSet);
         }), lang.hitch(this, function(err){
@@ -306,7 +307,7 @@ function(array, declare, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, 
 
     //return a deferred object which resolves features
     //if silent is true, it won't show message box
-    _getFeatures: function(/*silent*/){
+    _getFeatures: function(silent, doNotQueryServerToGetAllFeatures){
       var def = new Deferred();
       var features = [];
       var info = this._getSelectedLayerInfomation();
@@ -340,7 +341,11 @@ function(array, declare, _WidgetBase, _TemplatedMixin, _WidgetsInTemplateMixin, 
                   message: this.nls.selectFeaturesOrDrawShapesTip
                 });*/
                 //type is 1 or 2
-                def = this._getAllFeaturesFromFeaturelayer(info.layer);
+                if (doNotQueryServerToGetAllFeatures) {
+                  def.resolve(features);
+                } else {
+                  def = this._getAllFeaturesFromFeaturelayer(info.layer);
+                }
               }
             }
           }

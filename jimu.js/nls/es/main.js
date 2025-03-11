@@ -483,7 +483,7 @@ define({
     "unknowError": "no se pueden completar las operaciones",
     "invalidType": "Tipo de archivo no válido.",
     "cropImage": "Recortar imagen",
-    "exceed": "El tamaño de archivo no puede sobrepasar los 1024 KB",
+    "exceed": "El tamaño de archivo no puede sobrepasar los ${size} KB",
     "enableFlash": "Habilite Adobe Flash antes de buscar una imagen.",
     "cropWaining": "Seleccione una foto que tenga por lo menos ${width} x ${height} píxeles.",
     "toolTip": "Para obtener el mejor resultado, la imagen debe tener ${width} píxeles de ancho y ${height} píxeles de alto. El resto de tamaños se adaptará a este tamaño. Los formatos de imagen válidos son: PNG, GIF y JPEG."

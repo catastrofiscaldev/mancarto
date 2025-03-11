@@ -8,6 +8,7 @@ define(["./UtilityCase"], function (UtilityCase) {
         currentLotsRows: null, // @calculate []: Features de los lotes actuales
         currentPoinLotsRows: null, // @calculate: Features de los puntos de los lotes actuales
         currentLandsRows: null, // @calculate: Features de los predios actuales
+        landsRegisterByRequests: null, // @param: Predios registrados por solicitud
         // newPointLots: null, // @param: nuevos puntos lote
         newPointLotsGraphics: null, // @params: nuevos puntos lote como graficos
         newLandsGraphics: null, // @params: nuevos predios como graficos
@@ -38,7 +39,7 @@ define(["./UtilityCase"], function (UtilityCase) {
         executeSubdivision: function executeSubdivision() {
             var _this = this;
 
-            return UtilityCase.checkResolutionDocument(this.newLandsGraphics, this.ubigeo, this.landUrl).then(function () {
+            return UtilityCase.checkResolutionDocument(this.newLandsGraphics, this.ubigeo, this.landUrl, checkOnlyOutsideTheLot = true, currentLands = this.landsRegisterByRequests).then(function () {
                 return UtilityCase.getBlockFromLot(_this.currentLotsRows[0].geometry, _this.blockUrl);
             }).then(function (block) {
                 return UtilityCase.checkExistLotUrban(_this.attributes, block, _this.lotUrl, _this.currentLotsRows, _this.ubigeo);

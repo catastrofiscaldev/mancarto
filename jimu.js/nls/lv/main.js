@@ -483,7 +483,7 @@ define({
     "unknowError": "nevar pabeigt darbības",
     "invalidType": "Nederīgs faila tips.",
     "cropImage": "Apgriezt attēlu",
-    "exceed": "Faila lielums nedrīkst pārsniegt 1024 KB",
+    "exceed": "Faila lielums nedrīkst pārsniegt ${size} KB",
     "enableFlash": "Lai pārlūkotu uz attēlu, aktivizējiet Adobe Flash.",
     "cropWaining": "Lūdzu, izvēlieties fotoattēlu, kura izmēri ir vismaz ${width} x ${height} pikseļi.",
     "toolTip": "Lai sasniegtu labākos rezultātus, attēla platumam jābūt ${width} pikseļiem un tā augstumam jābūt ${height} pikseļiem. Citi izmēri tiks pielāgoti, lai atbilstu. Akceptētie attēla formāti ir: PNG, GIF un JPEG."

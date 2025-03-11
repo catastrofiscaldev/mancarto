@@ -483,7 +483,7 @@ define({
     "unknowError": "no es poden completar les operacions",
     "invalidType": "Tipus de fitxer no vàlid.",
     "cropImage": "Retalla la imatge",
-    "exceed": "La mida del fitxer no pot superar 1024 KB",
+    "exceed": "La mida del fitxer no pot ser superior a ${size} KB",
     "enableFlash": "Habiliteu l'Adobe Flash abans de cercar una imatge.",
     "cropWaining": "Trieu una foto que sigui com a mínim de ${width} × ${height} píxels.",
     "toolTip": "Per obtenir un resultat òptim, la imatge ha de ser de ${width} píxels d'amplada per ${height} píxels d'altura. Les altres mides s'ajustaran per encaixar-hi. Els formats d'imatge acceptables son: PNG, GIF i JPEG."

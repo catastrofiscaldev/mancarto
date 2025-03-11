@@ -213,6 +213,9 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
         checkResolutionDocument: function checkResolutionDocument(newLandsGraphics, ubigeo, urlLand) {
             var _this = this;
 
+            var checkOnlyOutsideTheLot = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+            var currentLands = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : [];
+
             var deferred = new Deferred();
             var LandCls = new this.Land();
             var resolutionDocument = [];
@@ -223,6 +226,14 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             });
             var queryLand = new Query();
             queryLand.where = LandCls.partida + " in ('" + resolutionDocument.join("','") + "') and " + LandCls.ubigeo + " = '" + ubigeo + "' and " + LandCls.estado + " = " + this.estadoValue;
+
+            if (checkOnlyOutsideTheLot) {
+                var cpus = currentLands.map(function (land) {
+                    return land.cup;
+                });
+                queryLand.where += " and " + LandCls.codCpu + " not in ('" + cpus.join("','") + "')";
+            }
+
             queryLand.returnGeometry = false;
             queryLand.outFields = [LandCls.partida, LandCls.codCpu];
             var queryTaskLand = new QueryTask(urlLand);

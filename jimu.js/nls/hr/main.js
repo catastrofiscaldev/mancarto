@@ -483,7 +483,7 @@ define({
     "unknowError": "nije moguće dovršiti radnje",
     "invalidType": "Nevažeća vrsta datoteke.",
     "cropImage": "Obreži sliku",
-    "exceed": "Veličina datoteke ne može premašiti 1024 KB",
+    "exceed": "Veličina datoteke ne može premašiti ${size} KB",
     "enableFlash": "Uključite Adobe Flash prije pretraživanja slike.",
     "cropWaining": "Izaberite fotografiju koja je barem ${width} x ${height} piksela.",
     "toolTip": "Za najbolje rezultate slika bi trebala imati ${width} piksela u širini i ${height} piksela u visini. Ostale će se veličine prilagoditi kako bi odgovarale. Prihvatljivi formati slika: PNG, GIF i JPEG."

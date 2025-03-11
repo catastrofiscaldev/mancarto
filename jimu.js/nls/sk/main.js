@@ -483,7 +483,7 @@ define({
     "unknowError": "nie je možné dokončiť operácie",
     "invalidType": "Neplatný typ súboru.",
     "cropImage": "Orezať obrázok",
-    "exceed": "Veľkosť súboru nemôže prekročiť 1024 KB",
+    "exceed": "Veľkosť súboru nemôže prekročiť ${size} KB",
     "enableFlash": "Povoľte Adobe Flash pred prehľadávaním obrázka.",
     "cropWaining": "Vyberte fotku, ktorá má rozmer aspoň ${width} x ${height} pixelov.",
     "toolTip": "Pre najlepší výsledok by mal byť obrázok ${width} pixelov široký a ${height} pixelov vysoký. Ostatné veľkosti budú prispôsobené. Prijateľné formáty obrázkov sú: PNG, GIF a JPEG."

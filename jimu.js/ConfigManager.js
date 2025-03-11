@@ -157,13 +157,13 @@ function (declare, lang, array, html, topic, Deferred, on, jimuUtils, WidgetMana
       if(error.isSelfOrigin === false) {
         html.create('div', {
           'class': 'app-error',
-          innerHTML: jimuUtils.sanitizeHTML(error.message || error)
+          innerHTML: jimuUtils.stripHTML(error.message || error)
         }, document.body);
 
         // close buttion
         var closeButton = html.create('div', {
           'class': 'app-error',
-          innerHTML: jimuUtils.sanitizeHTML(window.jimuNls.common.close)
+          innerHTML: jimuUtils.stripHTML(window.jimuNls.common.close)
         }, document.body);
         html.setStyle(closeButton, {'margin-top': '80px',
                                     'padding-top': 0,
@@ -184,7 +184,7 @@ function (declare, lang, array, html, topic, Deferred, on, jimuUtils, WidgetMana
 
         var advancedButton = html.create('div', {
           'class': 'app-error-advanced-button',
-          innerHTML: jimuUtils.sanitizeHTML(window.jimuNls.advancedOptions)
+          innerHTML: jimuUtils.stripHTML(window.jimuNls.advancedOptions)
         }, advancedButtonBox);
 
         html.setStyle(advancedButton, {'margin': '0 auto 0 auto',
@@ -209,7 +209,7 @@ function (declare, lang, array, html, topic, Deferred, on, jimuUtils, WidgetMana
           '<a href=' + targetHref + '>' + targetHref + '</a>');
         var proceedContent = html.create('div', {
           'class': 'app-error',
-          innerHTML: jimuUtils.sanitizeHTML(content)
+          innerHTML: jimuUtils.stripHTML(content)
         }, document.body);
         html.setStyle(proceedContent, {'margin-top': '140px',
                                         'display': 'none',
@@ -221,7 +221,7 @@ function (declare, lang, array, html, topic, Deferred, on, jimuUtils, WidgetMana
       } else {
         html.create('div', {
           'class': 'app-error',
-          innerHTML: jimuUtils.sanitizeHTML(error.message || error)
+          innerHTML: jimuUtils.stripHTML(error.message || error)
         }, document.body);
         /*globals jimuConfig*/
         html.setStyle(jimuConfig.loadingId, 'display', 'none');

@@ -2702,6 +2702,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           SubDivision.arancelUrl = _this4.layersMap.getLayerInfoById(idLyrCfArancel).getUrl();
           SubDivision.landUrl = _this4.layersMap.getLayerInfoById(idLyrCfPredios).getUrl();
           SubDivision.cadastralBlockUrl = _this4.layersMap.getLayerInfoById(idLyrCfManzana).getUrl();
+          SubDivision.landsRegisterByRequests = selfCm.currentLandTabRows;
           SubDivision.currentLotsRows = _this4.currentLotsRows;
           SubDivision.newPointLotsGraphics = _this4.map.getLayer(idGraphicPuntoLote).graphics;
           SubDivision.newLandsGraphics = graphicLayerPredioByMaintenance.graphics;

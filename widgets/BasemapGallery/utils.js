@@ -351,12 +351,7 @@ define([
   mo._getBasemapSpatialReference = function(basemapItem, basemapItemData) {
     var basemapSpatialRef = null, async = false;
     var spatialRefDef = new Deferred();
-    if ((basemapItem.owner && basemapItem.owner.indexOf("esri_") === 0) ||
-      mo.isNoUrlLayerMap(basemapItemData.baseMap.baseMapLayers)) {
-      basemapSpatialRef = {
-        wkid: "102100"
-      };
-    } else if (basemapItemData.spatialReference || basemapItem.spatialReference) {
+    if (basemapItemData.spatialReference || basemapItem.spatialReference) {
       basemapSpatialRef = basemapItemData.spatialReference || basemapItem.spatialReference;
     } else if (basemapItemData.baseMap.baseMapLayers && basemapItemData.baseMap.baseMapLayers[0]) {
       var lyr = basemapItemData.baseMap.baseMapLayers[0];
@@ -372,7 +367,8 @@ define([
           console.error(err);
           spatialRefDef.resolve(null);
         });
-      } else if (lyr.layerType === 'VectorTileLayer') {
+      } else if ((basemapItem.owner && basemapItem.owner.indexOf("esri_") === 0) ||
+        mo.isNoUrlLayerMap(basemapItemData.baseMap.baseMapLayers) || lyr.layerType === 'VectorTileLayer') {
         basemapSpatialRef = {
           wkid: "102100"
         };

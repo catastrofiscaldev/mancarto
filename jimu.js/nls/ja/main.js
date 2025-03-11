@@ -483,7 +483,7 @@ define({
     "unknowError": "操作を完了できません",
     "invalidType": "無効なファイル タイプです。",
     "cropImage": "画像のトリミング",
-    "exceed": "ファイル サイズが 1024 KB を超えてはいけません。",
+    "exceed": "ファイル サイズが ${size} KB を超えてはなりません",
     "enableFlash": "画像を参照する前に、Adobe Flash を有効化してください。",
     "cropWaining": "少なくとも ${width} x ${height} ピクセルの写真を選択してください。",
     "toolTip": "一番見やすい画像サイズは、幅 ${width} ピクセル、高さ ${height} ピクセルです。その他のサイズでは自動的にサイズが調整されます。使用できる画像形式は、PNG、GIF、JPEG です。"

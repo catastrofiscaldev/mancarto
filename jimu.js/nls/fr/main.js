@@ -155,7 +155,7 @@ define({
   "symbolChooser": {
     "preview": "Aperçu",
     "markerCategory": "Catégorie de symboles ponctuels",
-    "basic": "De base",
+    "basic": "Basique",
     "arrows": "Flèches",
     "business": "Entreprises",
     "cartographic": "Cartographie",
@@ -483,7 +483,7 @@ define({
     "unknowError": "impossible d'exécuter les opérations",
     "invalidType": "Type de fichier non valide.",
     "cropImage": "Rogner l'image",
-    "exceed": "La taille du fichier ne peut pas dépasser 1 024 Ko",
+    "exceed": "La taille du fichier ne peut pas dépasser ${size} Ko",
     "enableFlash": "Activez Adobe Flash avant de naviguer vers une image.",
     "cropWaining": "Choisir une photo d’au moins ${width} x ${height} pixels.",
     "toolTip": "Pour optimiser les résultats, l'image doit être de ${width} pixels en largeur sur ${height} pixels en hauteur. Les autres tailles sont ajustées en conséquence. Les formats d'image acceptables sont : PNG, GIF et JPEG."

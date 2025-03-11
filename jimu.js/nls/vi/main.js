@@ -483,7 +483,7 @@ define({
     "unknowError": "không thể hoàn thành hoạt động",
     "invalidType": "Loại tệp không hợp lệ.",
     "cropImage": "Xén Ảnh",
-    "exceed": "Kích cỡ tệp không được vượt quá 1024 KB",
+    "exceed": "Kích cỡ tệp không được vượt quá ${size} KB",
     "enableFlash": "Vui lòng kích hoạt Adobe Flash trước khi duyệt tìm hình ảnh.",
     "cropWaining": "Vui lòng chọn ảnh có kích thước tối thiểu ${width} x ${height} pixel.",
     "toolTip": "Để có kết quả tốt nhất, hình ảnh phải rộng ${width} pixel và cao ${height} pixel. Các kích cỡ khác sẽ được điều chỉnh cho phù hợp. Các định dạng hình ảnh được chấp nhận là: PNG, GIF và JPEG."

@@ -483,7 +483,7 @@ define({
     "unknowError": "toiminguid ei saanud lõpule viia",
     "invalidType": "Sobimatut tüüpi fail",
     "cropImage": "Kärbi pilti",
-    "exceed": "Faili maht võib olla kuni 1024 KB.",
+    "exceed": "Faili maht võib olla kuni ${size} kB",
     "enableFlash": "Enne pildini sirvimist lubage Adobe Flash.",
     "cropWaining": "Palun valige foto, mille mõõdud on vähemalt ${width} x ${height} pikslit.",
     "toolTip": "Parima tulemuse saamiseks peaks pildi laius olema ${width} pikslit ning kõrgus ${height} pikslit. Muud suurused kohandatakse parajaks. Sobivad pildiformaadid on PNG, GIF ja JPEG."

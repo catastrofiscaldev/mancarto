@@ -483,7 +483,7 @@ define({
     "unknowError": "无法完成操作",
     "invalidType": "无效的文件类型。",
     "cropImage": "裁剪图像",
-    "exceed": "文件大小不得超过 1024 KB",
+    "exceed": "文件大小不得超过 ${size} KB",
     "enableFlash": "浏览影像前请先启用 Adobe Flash。",
     "cropWaining": "请选择至少拥有 ${width} x ${height} 像素的照片。",
     "toolTip": "为获得最佳效果，图像的宽度应为 ${width} 像素，高度应为 ${height} 像素。其他大小将调整为适应此大小。可接受的图像格式包括: PNG、GIF 和 JPEG。"

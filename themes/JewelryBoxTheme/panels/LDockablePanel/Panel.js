@@ -15,19 +15,19 @@
 ///////////////////////////////////////////////////////////////////////////
 
 define(['dojo/_base/declare',
-  'dojo/_base/lang',
-  'dojo/_base/html',
-  'require',
-  'dojo/on',
-  'dojo/keys',
-  'dojo/topic',
-  'dijit/_TemplatedMixin',
-  'dojo/text!./Panel.html',
-  'jimu/BaseWidgetPanel',
-  'jimu/dijit/LoadingIndicator',
-  'jimu/utils'
-],
-  function (
+    'dojo/_base/lang',
+    'dojo/_base/html',
+    'require',
+    'dojo/on',
+    'dojo/keys',
+    'dojo/topic',
+    'dijit/_TemplatedMixin',
+    'dojo/text!./Panel.html',
+    'jimu/BaseWidgetPanel',
+    'jimu/dijit/LoadingIndicator',
+    'jimu/utils'
+  ],
+  function(
     declare, lang, html, require, on, keys, topic,
     _TemplatedMixin, template, BaseWidgetPanel, LoadingIndicator, utils
   ) {
@@ -42,17 +42,17 @@ define(['dojo/_base/declare',
 
       width: 0,
 
-      postMixInProperties: function () {
+      postMixInProperties:function(){
         this.panelNls = window.jimuNls.common;
       },
 
-      postCreate: function () {
+      postCreate: function(){
         this.inherited(arguments);
         this.maxWidth = this.position.width;
 
         html.setAttr(this.domNode, 'tabindex', this.config.tabIndex);
         var widgetConfig = this.config.widgets[0];
-        if (widgetConfig) {
+        if(widgetConfig){
           html.setAttr(this.domNode, 'aria-label', widgetConfig.label);
           this.expandLabel = this.panelNls.expand.replace('${value}', widgetConfig.label);
           this.collapseLabel = this.panelNls.collapse.replace('${value}', widgetConfig.label);
@@ -60,19 +60,19 @@ define(['dojo/_base/declare',
         }
 
         //use barNode as interactive DOM when panel is hidden.
-        this.own(on(this.domNode, 'focus', lang.hitch(this, function () {
-          if (this.windowState === 'minimized') {
+        this.own(on(this.domNode, 'focus', lang.hitch(this, function(){
+          if(this.windowState === 'minimized'){
             this.barNode.focus();
           }
         })));
 
-        this.own(on(this.domNode, 'keydown', lang.hitch(this, function (evt) {
-          if (!this.widget && widgetConfig) {
+        this.own(on(this.domNode, 'keydown', lang.hitch(this, function(evt){
+          if(!this.widget && widgetConfig){
             this.widget = this.widgetManager.getWidgetById(widgetConfig.id);
           }
-          if (evt.keyCode === keys.ESCAPE) {
-            if (html.hasClass(evt.target, this.baseClass) ||
-              (evt.target === this.barNode && this.windowState === 'minimized')) {
+          if(evt.keyCode === keys.ESCAPE){
+            if(html.hasClass(evt.target, this.baseClass) ||
+              (evt.target === this.barNode && this.windowState === 'minimized')){
               evt.preventDefault();
               utils.trapToNextFocusContainer(this.domNode);
               return;
@@ -80,48 +80,48 @@ define(['dojo/_base/declare',
             var focusNode = evt.target === this.barNode ? this.domNode : this.barNode;
             focusNode.focus();
           }
-          else if (evt.keyCode === keys.ENTER && html.hasClass(evt.target, this.baseClass)) {
+          else if(evt.keyCode === keys.ENTER && html.hasClass(evt.target, this.baseClass)){
             evt.stopPropagation();
             evt.preventDefault();
-            if (this.widget) {
+            if(this.widget){
               utils.focusFirstFocusNode(this.widget.domNode);
             }
           }
         })));
       },
 
-      startup: function () {
+      startup: function(){
         var configs = this.getAllWidgetConfigs();
-        if (Array.isArray(this.config.widgets)) {
+        if(Array.isArray(this.config.widgets)){
           configs = this.config.widgets;
-        } else {
+        }else{
           configs = [this.config];
         }
-        if (configs.length > 0) {
+        if(configs.length > 0){
           html.empty(this.containerNode);
         }
 
         this.inherited(arguments);
       },
 
-      onOpen: function () {
+      onOpen: function(){
         this._setPostionWidthAndLeft();
         html.setStyle(this.domNode, {
           width: this.position.width + 'px'
         });
-        if (this.position.width === 0) {
+        if(this.position.width === 0){
           this.panelManager.minimizePanel(this);
-        } else {
+        }else{
           this.panelManager.maximizePanel(this);
         }
       },
 
-      setPosition: function (position) {
+      setPosition: function(position){
         this.inherited(arguments);
-        topic.publish('changeMapPosition', { left: this.position.left + this.position.width });
+        topic.publish('changeMapPosition', {left: this.position.left + this.position.width});
       },
 
-      onMaximize: function () {
+      onMaximize: function() {
         html.addClass(this.barNode, 'max');
         html.removeClass(this.barNode, 'min');
         html.removeClass('jimu-layout-manager', 'ldockable-panel--minimized');
@@ -131,10 +131,10 @@ define(['dojo/_base/declare',
         this.inherited(arguments);
       },
 
-      onMinimize: function () {
+      onMinimize: function() {
         html.removeClass(this.barNode, 'max');
         html.addClass(this.barNode, 'min');
-        html.addClass('jimu-layout-manager', 'ldockable-panel--minimized');
+        html.addClass('jimu-layout-manager','ldockable-panel--minimized');
 
         //on minimize, we can't set width/height = 0 to minimize because we use border-box model
         //and the content height/width can't be nagative
@@ -144,23 +144,23 @@ define(['dojo/_base/declare',
         this.inherited(arguments);
       },
 
-      resize: function () {
+      resize: function(){
         this._setPostionWidthAndLeft();
 
         var style = utils.getPositionStyle(this.position);
         style.position = 'absolute';
         html.setStyle(this.domNode, style);
-        topic.publish('changeMapPosition', { left: this.position.left + this.position.width });
+        topic.publish('changeMapPosition', {left: this.position.left + this.position.width});
       },
 
-      _setPostionWidthAndLeft: function () {
-        if (window.appInfo.isRunInMobile) {
+      _setPostionWidthAndLeft: function(){
+        if(window.appInfo.isRunInMobile){
           var box = html.getMarginBox(window.jimuConfig.layoutId);
           this.position.width = box.w * 0.8;
-          if (this.position.width > this.maxWidth) {
+          if(this.position.width > this.maxWidth){
             this.position.width = this.maxWidth;
           }
-        } else {
+        }else{
           this.position.width = this.position.width;
         }
 
@@ -171,7 +171,7 @@ define(['dojo/_base/declare',
         // }
       },
 
-      _onBarClick: function () {
+      _onBarClick: function() {
         var _tabindex = 0;
         if (this.windowState === 'maximized') {
           this.panelManager.minimizePanel(this);
@@ -182,24 +182,24 @@ define(['dojo/_base/declare',
           html.setAttr(this.barNode, 'aria-label', this.collapseLabel);
         }
         html.setAttr(this.barNode, 'tabindex', _tabindex);
-        setTimeout(lang.hitch(this, function () {
+        setTimeout(lang.hitch(this, function(){
           this.barNode.focus();
         }), 50);
       },
 
-      _onBarKeyDown: function (evt) {
-        if (evt.keyCode === keys.ENTER || evt.keyCode === keys.SPACE) {
+      _onBarKeyDown: function(evt) {
+        if(evt.keyCode === keys.ENTER || evt.keyCode === keys.SPACE){
           evt.stopPropagation();
           evt.preventDefault();
           this._onBarClick();
-        } else if (evt.keyCode === keys.TAB) {
-          if (this.windowState === 'maximized') {
+        }else if(evt.keyCode === keys.TAB){
+          if(this.windowState === 'maximized'){
             evt.preventDefault();
             utils.focusFirstFocusNode(this.widget.domNode);
-          } else if (evt.shiftKey) {//mini
+          }else if(evt.shiftKey){//mini
             //back to last widget icon in header widget basing on the default browser's behavior.
             html.setAttr(this.domNode, 'tabindex', '-1'); //temp to stop focusing on panel domNode
-            setTimeout(lang.hitch(this, function () {
+            setTimeout(lang.hitch(this, function(){
               html.setAttr(this.domNode, 'tabindex', this.config.tabIndex); //reset
             }), 50);
           }
