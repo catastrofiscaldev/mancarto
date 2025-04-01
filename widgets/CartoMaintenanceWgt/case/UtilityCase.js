@@ -216,6 +216,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             var checkOnlyOutsideTheLot = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
             var currentLands = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : [];
 
+
             var deferred = new Deferred();
             var LandCls = new this.Land();
             var resolutionDocument = [];
@@ -535,7 +536,6 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                             objBase: arancel,
                             updateOnlyNulls: true
                         });
-                        console.log(pointLots[index].attributes);
                     }
                 });
                 return deferred.resolve(pointLots);
@@ -648,6 +648,9 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                             if (attributes.resolutionType === _this7.tipoResolucionValue) {
                                 landProps.attributes[LandCls.partida] = attributes.resolutionDocument;
                                 landProps.attributes[LandCls.estadoPartida] = _this7.estadoPartidaValue;
+                            } else {
+                                landProps.attributes[LandCls.partida] = null;
+                                landProps.attributes[LandCls.estadoPartida] = null;
                             }
                             // if (attributes.floor){
                             landProps.attributes[LandCls.piso] = attributes.floor;

@@ -431,7 +431,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         return response.json();
       }).catch(function (err) {
         selfCm.busyIndicator.hide();
-        console.log("An error occurred while fetching the data.");
+        selfCm._showMessage(err.message, type = "error");
+        // console.log("An error occurred while fetching the data.");
       });
     },
     _getRequestsTrayDataCm: function _getRequestsTrayDataCm(responseData, state) {
@@ -991,7 +992,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           selfCm.resultCtnApCm.classList.toggle('active');
           selfCm.busyIndicator.hide();
         } catch (error) {
-          console.log(error);
+          // console.log(error)
+          selfCm._showMessage(error.message, type = "error");
           selfCm.busyIndicator.hide();
         }
       });
@@ -1604,7 +1606,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         selfCm.map.setExtent(selfCm.currentLotsRows[0].geometry.getExtent().expand(1.5), true);
         selfCm.busyIndicator.hide();
       }).catch(function (error) {
-        console.log(error);
+        // console.log(error)
         selfCm.busyIndicator.hide();
         selfCm._showMessage(error.message, type = "error");
       });
