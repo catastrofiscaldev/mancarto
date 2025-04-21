@@ -266,7 +266,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             });
             queryLot.where = LotCls.idLotP + " not in (" + idLotPArray.join(",") + ") and " + LotCls.ubigeo + " = '" + ubigeo + "'";
             queryLot.geometry = block.geometry;
-            queryLot.spatialRel = "within";
+            queryLot.spatialRelationship = Query.SPATIAL_REL_CONTAINS;
 
             queryLot.outFields = [LotCls.lotUrb];
             var queryTaskLot = new QueryTask(urlLots);
