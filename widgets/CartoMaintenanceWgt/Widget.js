@@ -246,6 +246,12 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     resolutionDocument: null,
     floor: null,
     urbanLotNumber: null,
+    indoorType: null,
+    indoorNumber: null,
+    edificationNumber: null,
+    edificationType: null,
+    urbanSublotNumber: null,
+
     statusDrawingRightOfWay: false,
     extentBlock: null,
     pointLotsNotMediterrnean: null,
@@ -689,7 +695,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     _getLandsOriginalsTab: function _getLandsOriginalsTab(idSolicitud) {
       var self = this;
       var deferred = new Deferred();
-      var urlOriginal = self.config.landsByApplicationUrl + '/' + idSolicitud;
+      var urlOriginal = '' + self.config.landsByApplicationUrl + idSolicitud + '/';
       fetch(urlOriginal).then(function (response) {
         if (!response.ok) {
           throw new Error("HTTP error " + response.status);
@@ -748,9 +754,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _requestCaseInfo: function _requestCaseInfo() {
       selfCm.busyIndicator.show();
-      var urlResults = selfCm.config.resultsByApplication + '/' + selfCm.codRequestsCm + '?limit=' + selfCm.limitAnother;
-      var urlDocSupport = selfCm.config.applicationListUrl + '/' + selfCm.codRequestsCm;
-      var urlAffectedLands = selfCm.config.affectedLands + '/' + selfCm.codRequestsCm + '?limit=' + selfCm.limitAnother;
+      var urlResults = '' + selfCm.config.resultsByApplication + selfCm.codRequestsCm + '/?limit=' + selfCm.limitAnother;
+      var urlDocSupport = '' + selfCm.config.applicationListUrl + selfCm.codRequestsCm + '/';
+      var urlAffectedLands = '' + selfCm.config.affectedLands + selfCm.codRequestsCm + '/?limit=' + selfCm.limitAnother;
 
       Promise.all([selfCm._getOriginalData(selfCm.codRequestsCm), fetch(urlResults).then(function (response) {
         if (!response.ok) {
@@ -970,7 +976,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _FormResult: function _FormResult(id_solicitud, caseCm) {
       selfCm.busyIndicator.show();
-      var urlPredioResults = selfCm.config.resultsByApplication + '/' + id_solicitud + '?limit=' + selfCm.limitAnother;
+      var urlPredioResults = '' + selfCm.config.resultsByApplication + id_solicitud + '/?limit=' + selfCm.limitAnother;
       if (caseCm == Deactivate.nameCase) {
         selfCm.busyIndicator.hide();
         selfCm._showMessage(selfCm.nls.resultDeactivate);
@@ -1229,7 +1235,12 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             floor: _this3.floor,
             urbanLotNumber: _this3.urbanLotNumber,
             tipLot: _this3.currentRightOfWayDraw ? 2 : 1,
-            mediterraneanCoords: _this3.currentRightOfWayDraw
+            mediterraneanCoords: _this3.currentRightOfWayDraw,
+            urbanSublotNumber: _this3.urbanSublotNumber,
+            indoorNumber: _this3.indoorNumber,
+            indoorType: _this3.indoorType,
+            edificationNumber: _this3.edificationNumber,
+            edificationType: _this3.edificationType
           };
           graphicLayerPredioByMaintenance.add(graphicDrawLand);
           if (_this3.currentRightOfWayDraw) {
@@ -1798,7 +1809,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm.responseRequests.forEach(function (predio, idx) {
         var tr = dojo.create('tr');
         tr.id = 'predio_' + predio['id'];
-        var row = '<td class="center-aligned">' + (idx + 1) + '</td>\n                  <td>' + predio['address'] + '</td>\n                  <td class="center-aligned">\n                   <span \n                    id="' + tr.id + '_draw"\n                    data-cpm="' + predio['cpm'] + '" \n                    data-resolutionType="' + predio['resolutionType'] + '"\n                    data-resolutionDocument="' + predio['resolutionDocument'] + '"\n                    data-floor="' + predio['floor'] + '"\n                    data-urbanLotNumber="' + predio['urbanLotNumber'] + '"\n                   >\n                      <i class="fas fa-map-marker-alt"></i>\n                   </span>\n                  </td>';
+        var row = '<td class="center-aligned">' + (idx + 1) + '</td>\n                  <td>' + predio['address'] + '</td>\n                  <td class="center-aligned">\n                   <span \n                    id="' + tr.id + '_draw"\n                    data-cpm="' + predio['cpm'] + '" \n                    data-resolutionType="' + predio['resolutionType'] + '"\n                    data-resolutionDocument="' + predio['resolutionDocument'] + '"\n                    data-floor="' + predio['floor'] + '"\n                    data-urbanLotNumber="' + (predio['urbanLotNumber'] || null) + '"\n                    data-urbanSublotNumber="' + (predio['urbanSublotNumber'] || null) + '"\n                    data-edificationType="' + (predio['edificationType'] || null) + '"\n                    data-edificationNumber="' + (predio['edificationNumber'] || null) + '"\n                    data-indoorType="' + (predio['indoorType'] || null) + '"\n                    data-indoorNumber="' + (predio['indoorNumber'] || null) + '"\n                   >\n                      <i class="fas fa-map-marker-alt"></i>\n                   </span>\n                  </td>';
         tr.innerHTML = row;
         tr.style.cursor = "pointer";
         bodyTable.appendChild(tr);
@@ -1839,6 +1850,11 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm.resolutionDocument = evt.currentTarget.dataset.resolutiondocument === 'null' ? null : evt.currentTarget.dataset.resolutiondocument;
       selfCm.floor = evt.currentTarget.dataset.floor === 'null' ? null : evt.currentTarget.dataset.floor;
       selfCm.urbanLotNumber = evt.currentTarget.dataset.urbanlotnumber === 'null' ? null : evt.currentTarget.dataset.urbanlotnumber;
+      selfCm.urbanSublotNumber = evt.currentTarget.dataset.urbansublotnumber === 'null' ? null : evt.currentTarget.dataset.urbansublotnumber;
+      selfCm.edificationType = evt.currentTarget.dataset.edificationtype === 'null' ? null : evt.currentTarget.dataset.edificationtype;
+      selfCm.edificationNumber = evt.currentTarget.dataset.edificationnumber === 'null' ? null : evt.currentTarget.dataset.edificationnumber;
+      selfCm.indoorType = evt.currentTarget.dataset.indoortype === 'null' ? null : evt.currentTarget.dataset.indoortype;
+      selfCm.indoorNumber = evt.currentTarget.dataset.indoornumber === 'null' ? null : evt.currentTarget.dataset.indoornumber;
 
       // graphics initialize
       var graphic = graphicLayerPredioByMaintenance.graphics.filter(function (item) {
@@ -1891,7 +1907,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           var graphicNotSelected = lyr.graphics.filter(function (item) {
             return item.attributes.id == 'label_' + select.id.split('_')[1];
           });
-          graphicNotSelected[0].attributes.lot_urb = '';
+          graphicNotSelected[0].attributes.loturb = '';
+          graphicNotSelected[0].attributes.sublot = '';
         }
       });
     },
@@ -1904,12 +1921,17 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm.map.centerAndZoom(graphicSelected[0].geometry);
     },
     _editLoteUrbanoDivision: function _editLoteUrbanoDivision(evt) {
+      ;
       var id = evt.target.id.replace('loteUrbanoDv_', '');
       var lyr = selfCm.map.getLayer(idGraphicLabelCodLote);
       var graphic = lyr.graphics.filter(function (item) {
         return item.attributes.id == 'label_' + id;
       });
-      graphic[0].attributes.lot_urb = evt.target.selectedOptions[0].value;
+      var loturbDataset = evt.target.selectedOptions[0].dataset.loturb;
+      var sublotDataset = evt.target.selectedOptions[0].dataset.sublot;
+      graphic[0].attributes.loturb = loturbDataset === 'null' ? null : loturbDataset;
+      graphic[0].attributes.sublot = sublotDataset === 'null' ? null : sublotDataset;
+      console.log(graphic);
       lyr.refresh();
     },
     _buildDataLoteTable: function _buildDataLoteTable(tableBody, predios) {
@@ -1944,7 +1966,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           select.appendChild(option);
         });
 
-        codigoCell.appendChild(select);
+        select.disabled = true, codigoCell.appendChild(select);
         row.appendChild(codigoCell);
 
         var loteUrbCell = document.createElement('td');
@@ -1957,8 +1979,18 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
         selfCm.responseRequests.forEach(function (request, idx) {
           var option = document.createElement('option');
-          option.value = request.urbanLotNumber;
-          option.textContent = request.urbanLotNumber;
+          // option.value = request.urbanLotNumber || request.urbanSublotNumber;
+          // if urbanLotNumber is null or '' return null else return urbanLotNumber
+          option.dataset.loturb = request.urbanLotNumber || null;
+          option.dataset.sublot = request.urbanSublotNumber || null;
+          option.textContent = ((request.urbanLotNumber || '') + ' ' + (request.urbanSublotNumber || '')).trim();
+          option.value = option.textContent; // set value to textContent
+          // if (!request.urbanLotNumber) {
+          //   option.textContent = `Sublote ${request.urbanSublotNumber}`;
+          // } else {
+          //   option.textContent = `Lote ${request.urbanLotNumber}`;
+          // }
+          // option.textContent = request.urbanLotNumber || request.urbanSublotNumber;
           loteUrbSelect.appendChild(option);
           if (predio.num == idx + 1) {
             option.selected = true;
@@ -2013,8 +2045,10 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
       selfCm.geometryService.labelPoints(lotsDividedResultsSorted).then(function (labelPoints) {
         labelPoints.forEach(function (point, index) {
-          var cod_lote = selfCm._zfill(idx + 1, 3);
-          var txtSym = new TextSymbol(cod_lote, font, new Color([250, 0, 0, 1]));
+          var textLabel = selfCm._zfill(idx + 1, 3);
+          // const lotUrbAndSublot = `${selfCm.responseRequests[index].urbanLotNumber} ${selfCm.responseRequests[index].urbanSublotNumber}`;
+          // const textLabel = `${cod_lote} - ${lotUrbAndSublot}`.trim();
+          var txtSym = new TextSymbol(textLabel, font, new Color([250, 0, 0, 1]));
           txtSym.setColor(new esri.Color([0, 0, 0, 1])); // color blanco
           txtSym.setSize("12pt");
           txtSym.setHaloColor(new esri.Color([255, 255, 255, 1]));
@@ -2023,11 +2057,12 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           var idGraphic = 'label_' + (index + 1);
           var graphicLabel = new Graphic(point, txtSym, {
             id: idGraphic,
-            lot_urb: selfCm.responseRequests[index].urbanLotNumber,
+            loturb: selfCm.responseRequests[index].urbanLotNumber,
+            sublot: selfCm.responseRequests[index].urbanSublotNumber,
             clase: 'labelCodLoteDivision'
           });
           graphicLayerLabelCodLoteDivision.add(graphicLabel);
-          dataLoteTable.push({ num: index + 1, id: idGraphic, cod_lote: cod_lote });
+          dataLoteTable.push({ num: index + 1, id: idGraphic, cod_lote: textLabel });
           idx = idx + 1;
         });
         return dataLoteTable;
@@ -2557,7 +2592,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           Acumulation.attributes = labelCodLotesLayerGraphic.map(function (i) {
             return {
               codLot: i.symbol.text,
-              lotUrb: i.attributes.lot_urb,
+              // loturb: i.attributes.loturb,
+              loturb: i.attributes.loturb || null,
+              sublot: i.attributes.sublot || null,
               coords: [i.geometry.x, i.geometry.y]
             };
           });
@@ -2649,10 +2686,14 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             this._showMessage(this.nls.emptyLotCodeSubdivision, type = "error");
             return;
           };
-          if (!pred.attributes.lot_urb || pred.attributes.lot_urb === "...") {
+          // if (!pred.attributes.loturb || pred.attributes.loturb === "...") {
+          //   this._showMessage(this.nls.emptyUrbanLotSubdivision, type = "error");
+          //   return;
+          // };
+          if (!pred.attributes.loturb === 'null' && !pred.attributes.sublot === 'null') {
             this._showMessage(this.nls.emptyUrbanLotSubdivision, type = "error");
             return;
-          };
+          }
         }
       } catch (err) {
         _didIteratorError16 = true;
@@ -2682,9 +2723,11 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         return;
       };
 
-      // Check lotUrb
+      // Check loturb
       var lotUrbArray = labelCodLotesLayer.graphics.map(function (i) {
-        return i.attributes.lot_urb;
+        var loturb = i.attributes.loturb === 'null' ? null : i.attributes.loturb;
+        var sublot = i.attributes.sublot === 'null' ? null : i.attributes.sublot;
+        return '' + (loturb || '') + (sublot ? '-' + sublot : '');
       });
       var duplicateLotUrban = UtilityCase.checkDuplicateLotUrbanResults(lotUrbArray);
       if (duplicateLotUrban.length > 0) {
@@ -2722,7 +2765,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           SubDivision.attributes = labelCodLotesLayerGraphic.map(function (i) {
             return {
               codLot: i.symbol.text,
-              lotUrb: i.attributes.lot_urb,
+              loturb: i.attributes.loturb || null,
+              sublot: i.attributes.sublot || null,
               coords: [i.geometry.x, i.geometry.y]
             };
           });

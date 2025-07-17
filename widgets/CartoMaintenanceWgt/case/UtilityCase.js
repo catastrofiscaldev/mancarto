@@ -42,6 +42,11 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             this.partida = 'PARTIDA';
             this.estadoPartida = 'ESTADO_PARTIDA';
             this.piso = 'PISO';
+            // this.subLote = 'SUB_LOTE';
+            this.numEdificacion = 'NUM_EDIFICACION';
+            this.numInterior = 'NUM_INTERIOR';
+            this.tipEdificacion = 'TIP_EDIFICACION';
+            this.tipInterior = 'TIP_INTERIOR';
         },
         PointLot: function PointLot() {
             this.ubigeo = 'UBIGEO';
@@ -65,12 +70,17 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             this.ubigeo = 'UBIGEO';
             this.tipLot = 'TIP_LOT';
             this.estadoIns = 'ESTADO_INS';
+            this.subLote = 'SUB_LOTE';
+            // this.numEdificacion = 'NUM_EDIFICACION';
+            // this.numInterior = 'NUM_INTERIOR';
+            // this.tipEdificacion = 'TIP_EDIFICACION';
+            // this.tipInterior = 'TIP_INTERIOR';
         },
         Arancel: function Arancel() {
             this.secEjec = 'SEC_EJEC';
         },
         receptionModelRequest: function receptionModelRequest() {
-            return ["COD_PRE", "COD_CPU", "COD_SECT", "COD_MZN", "COD_LOTE", "COD_UU", "COD_VIA", "TIPO_UU", "NOM_UU", "NOM_REF", "MZN_URB", "LOT_URB", "TIP_VIA", "NOM_VIA", "CUADRA", "LADO", "DIR_MUN", "DIR_URB", "COORD_X", "COORD_Y", "RAN_CPU", "COD_UI", "COD_VER", "ID_LOTE_P", "ID", 'id_lote_puerta', 'longitude_puerta', 'latitude_puerta', 'lote_urbano_puerta', 'manzana_urbana_puerta'];
+            return ["COD_PRE", "COD_CPU", "COD_SECT", "COD_MZN", "COD_LOTE", "COD_UU", "COD_VIA", "TIPO_UU", "NOM_UU", "NOM_REF", "MZN_URB", "LOT_URB", "TIP_VIA", "NOM_VIA", "CUADRA", "LADO", "DIR_MUN", "DIR_URB", "COORD_X", "COORD_Y", "RAN_CPU", "COD_UI", "COD_VER", "ID_LOTE_P", "ID", "NUM_EDIFICACION", "NUM_INTERIOR", "TIP_EDIFICACION", "TIP_INTERIOR", "SUB_LOTE", 'id_lote_puerta', 'longitude_puerta', 'latitude_puerta', 'lote_urbano_puerta', 'manzana_urbana_puerta'];
         },
         matchWithReceptionModel: function matchWithReceptionModel(object) {
             var modelRequests = this.receptionModelRequest();
@@ -258,32 +268,53 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return deferred.promise;
         },
         checkExistLotUrban: function checkExistLotUrban(attributes, block, urlLots, currentLots, ubigeo) {
+            var checkSublotUrban = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : false;
+
             var deferred = new Deferred();
             var LotCls = new this.Lot();
             var queryLot = new Query();
+            // const lotsUrban = attributes.map(attr => attr.lotUrb);
+            // get lotsUrban from attributes and not null or empty
+
             var idLotPArray = currentLots.map(function (i) {
                 return i.attributes[LotCls.idLotP];
             });
-            queryLot.where = LotCls.idLotP + " not in (" + idLotPArray.join(",") + ") and " + LotCls.ubigeo + " = '" + ubigeo + "'";
+            queryLot.where = LotCls.ubigeo + " = '" + ubigeo + "' and " + LotCls.idLotP + " not in (" + idLotPArray.join(",") + ")";
             queryLot.geometry = block.geometry;
             queryLot.spatialRelationship = Query.SPATIAL_REL_CONTAINS;
 
-            queryLot.outFields = [LotCls.lotUrb];
+            queryLot.outFields = [LotCls.lotUrb, LotCls.subLote];
+
+            // if (checkSublotUrban) {
+            //     queryLot.outFields.push(LotCls.subLote);
+            // }
             var queryTaskLot = new QueryTask(urlLots);
-            var lotsUrban = attributes.map(function (attr) {
-                return attr.lotUrb;
-            });
+
             queryTaskLot.execute(queryLot).then(function (response) {
-                var lots = response.features.map(function (lot) {
-                    return lot.attributes[LotCls.lotUrb];
+                // let lots = [];
+                // let lotsUrban = [];
+                // if (checkSublotUrban) {
+                //     lotsUrban = attributes.map(attr => attr.lotUrb).filter(lot => lot && lot.trim() !== '');
+                //     lots = response.features.map(feature => feature.attributes[LotCls.subLote]).filter(lot => lot && lot.trim() !== '');
+                // } else if (response.features.length === 0) {
+                var lots = response.features.map(function (feature) {
+                    var lot = feature.attributes[LotCls.lotUrb] || '';
+                    var sublot = feature.attributes[LotCls.subLote] || '';
+                    return "" + lot + sublot;
                 });
+                var lotsUrban = attributes.map(function (attr) {
+                    var lot = attr.loturb || '';
+                    var sublot = attr.sublot || '';
+                    return "" + lot + sublot;
+                });
+                // }
                 var setLots = new Set(lots);
                 var commonElements = lotsUrban.filter(function (lot) {
                     return setLots.has(lot);
                 });
                 // const exist = lotsUrban.some(lot => lots.includes(lot));
                 if (commonElements.length > 0) {
-                    return deferred.reject(new Error("La solicitud no se puede realizar porque los lotes resultantes de la subdivisi\xF3n tienen denominaciones de lotes urbanos que ya existen en la manzana actual: " + commonElements));
+                    return deferred.reject(new Error("La solicitud no se puede realizar porque los lotes resultantes de la subdivisi\xF3n tienen denominaciones de lotes y/o sublotes urbanos que ya existen en la manzana actual: " + commonElements));
                 }
                 return deferred.resolve(block);
             }).catch(function (err) {
@@ -292,20 +323,32 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return deferred.promise;
         },
         checkExistLotUrbanIntoLotsOriginal: function checkExistLotUrbanIntoLotsOriginal(attributes, currentLots, block) {
+            var checkSublotUrban = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+
             var deferred = new Deferred();
             var LotCls = new this.Lot();
             var lotUrbArray = currentLots.map(function (i) {
-                return i.attributes[LotCls.lotUrb];
+                var lot = i.attributes[LotCls.lotUrb] || '';
+                var sublot = i.attributes[LotCls.subLote] || '';
+                return "" + lot + sublot;
             });
+            // if (checkSublotUrban) {
+            // const subLotArray = currentLots.map(i => i.attributes[LotCls.subLote]).filter(lot => lot && lot.trim() !== '');
+            // if (subLotArray.length > 0) {
+            //     lotUrbArray.push(...subLotArray);
+            // }
+            // }
             var lotsUrban = attributes.map(function (attr) {
-                return attr.lotUrb;
+                var lot = attr.lotUrb || '';
+                var sublot = attr.sublot || '';
+                return "" + lot + sublot;
             });
             var setLotsUrban = new Set(lotsUrban);
             var repeatedElements = lotUrbArray.filter(function (lot) {
                 return setLotsUrban.has(lot);
             });
             // const exist = lotsUrban.some(lot => lotUrbArray.includes(lot));
-            if (repeatedElements.length > 0) {
+            if (repeatedElements.length == 1) {
                 var mensaje = new Message({
                     message: "Uno de los lotes resultantes tiene la misma denominaci\xF3n de un lote urbano original: " + repeatedElements + ".\n\xBFDesea continuar con el proceso?",
                     type: "question",
@@ -323,6 +366,8 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                         }
                     }]
                 });
+            } else if (repeatedElements.length > 1) {
+                return deferred.reject(new Error("La solicitud no se puede realizar porque existen muchos lotes resultantes que tienen la misma denominaci\xF3n de los lotes originales: " + repeatedElements));
             } else {
                 return deferred.resolve(block);
             }
@@ -429,7 +474,8 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
 
                             if (geometryEngine.intersects(lots[idx].geometry, attr.geometry)) {
                                 lots[idx].attributes[LotCls.codLot] = attr.codLot;
-                                lots[idx].attributes[LotCls.lotUrb] = attr.lotUrb;
+                                lots[idx].attributes[LotCls.lotUrb] = attr.loturb || null;
+                                lots[idx].attributes[LotCls.subLote] = attr.sublot || null;
                                 break;
                             }
                         }
@@ -627,7 +673,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                         // Validate location
                         if (geometryEngine.intersects(landGraphic.geometry, pointLots[i].geometry)) {
                             // Validate attributes lotUrb
-                            if (pointLots[i].attributes.LOT_URB != attributes.urbanLotNumber) {
+                            if (pointLots[i].attributes.LOT_URB != attributes.urbanLotNumber || pointLots[i].attributes.SUB_LOTE != attributes.urbanSublotNumber) {
                                 throw new Error("La solicitud no se puede realizar porque el predio del lote " + attributes.urbanLotNumber + " se asign\xF3 al lote " + pointLots[i].attributes.LOT_URB);
                             }
                             var landProps = land.clone();
@@ -637,6 +683,10 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                                 omitPropsDefault: false
                             });
                             landProps.attributes[LandCls.codPre] = attributes.cpm;
+                            landProps.attributes[LandCls.tipEdificacion] = attributes.edificationType;
+                            landProps.attributes[LandCls.tipInterior] = attributes.indoorType;
+                            landProps.attributes[LandCls.numEdificacion] = attributes.edificationNumber;
+                            landProps.attributes[LandCls.numInterior] = attributes.indoorNumber;
                             landProps.attributes[LandCls.codUi] = codUiValue || _this7.codUiValue;
                             landProps.attributes[LandCls.estado] = _this7.estadoValue;
                             landProps.attributes[LandCls.coordX] = landGraphic.geometry.x;
