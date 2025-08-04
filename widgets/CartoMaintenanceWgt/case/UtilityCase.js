@@ -235,6 +235,10 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                     resolutionDocument.push(land.attributes.resolutionDocument);
                 }
             });
+
+            if (resolutionDocument.length === 0) {
+                return deferred.resolve();
+            }
             var queryLand = new Query();
             queryLand.where = LandCls.partida + " in ('" + resolutionDocument.join("','") + "') and " + LandCls.ubigeo + " = '" + ubigeo + "' and " + LandCls.estado + " = " + this.estadoValue;
 
