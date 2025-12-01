@@ -2,6 +2,7 @@ define(["./UtilityCase"], function (UtilityCase) {
     /*
     * @description: Objeto que contiene las funciones para la subdivisión de lotes
     */
+    var idLotesOriginales = [];
     var SubDivision = {
         codRequests: null, // @params: Código de la solicitud
         // currentLots: null, // @param: Lotes actuales a modificar
@@ -55,6 +56,9 @@ define(["./UtilityCase"], function (UtilityCase) {
                 );
             }).then(function (lots) {
                 _this.lots = lots;
+                idLotesOriginales = _this.currentLotsRows.map(function (i) {
+                    return i.attributes.ID_LOTE_P;
+                });
                 return UtilityCase.translateFieldsLotToUbicacion(lots, _this.ubicacionUrl, _this.newUbicacionGraphics);
             }).then(function (ubicaciones) {
                 return UtilityCase.translateFieldsArancelToUbicacion(ubicaciones, _this.arancelUrl);
@@ -69,10 +73,10 @@ define(["./UtilityCase"], function (UtilityCase) {
             // .then(lands => UtilityCase.calculateIdPred(lands, this.landUrl, this.ubigeo))
             .then(function (lands) {
                 _this.lands = lands;
-                console.log('lands subdivison', lands);
                 return UtilityCase.getDataOrigin(_this.ubicacionUrl, _this.currentLotsRows[0], _this.queryLots);
             }).then(function (results) {
                 _this.currentUbicacionRows = results[0].features;
+                // idLotesOriginales = this.currentLotsRows.map(i => i.attributes.ID_LOTE_P);
                 // this.currentLandsRows = results[1].features;
                 // this.idLandInactive = results[1].features.map(i => i.attributes.COD_CPU)
                 return UtilityCase.sendDataOriginToHistoric(_this.config, _this.currentLotsRows, _this.currentUbicacionRows);
@@ -81,7 +85,7 @@ define(["./UtilityCase"], function (UtilityCase) {
             }).then(function (results) {
                 return UtilityCase.addDataNew(_this.lots, _this.ubicaciones, _this.config);
             }).then(function (results) {
-                return UtilityCase.updateStatusRequests(_this.lands, _this.codRequests, _this.caseRequest, _this.ubigeo, _this.config, idLandInactive = _this.idLandInactive);
+                return UtilityCase.updateStatusRequests(_this.lands, _this.codRequests, _this.caseRequest, _this.ubigeo, _this.config, lotsInactive = idLotesOriginales);
             }).catch(function (err) {
                 throw err;
             });

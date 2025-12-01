@@ -404,6 +404,23 @@ p {
   margin-bottom: 10px;
 }
 
+.bodyPredInfoClsCm textarea {
+  padding: 5px;
+  width: 100%;
+  border: 1px solid #D2D2D2;
+  border-radius: 5px;
+  outline: none;
+  background: #ECECEC;
+  margin-bottom: 10px;
+  font-family: inherit;
+  font-size: inherit;
+  resize: none;
+  overflow: hidden;
+  min-height: 32px;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
 /* .toggleClsCm{
   width: 50%;
   text-align: right;
@@ -873,4 +890,58 @@ input[type='file'] {
   margin: 5px;
   /* font-weight: bold; */
   /* color: #434242; */
+}
+
+div.esriPopupWrapper .zoomTo {
+  display: none !important;
+}
+
+#containerPopupCustomIdCm{
+  padding: 0;
+  /* border-style: solid; */
+  /* border-width: 2px; */
+}
+#headerButtonPopupIdCm{
+  height: 30px;
+  /* margin-bottom: 10px; */
+  background: #d7eaf7;
+  display: flex;
+  align-items: center; 
+}
+#buttonPopupIdCm {
+  border: none;
+  background: transparent;
+  color: #0090F8;
+  cursor: pointer;
+}
+#containerTablePopupIdCm{
+  padding: 5px;
+}
+
+#containerTablePopupIdCm table {
+  width: 100%;
+  /* table-layout: fixed; */
+}
+
+#containerTablePopupIdCm table td:nth-child(1) {
+  width: 30px;
+  /* text-align: center; */
+}
+
+#containerTablePopupIdCm table td:nth-child(2) {
+  width: 70%;
+}
+
+#containerTablePopupIdCm table td:nth-child(3) {
+  width: 25%;
+  text-align: center;
+}
+
+.btnShowDataPredioClsCm {
+  border: none;
+  background-color: transparent;
+  color: #0090F8;
+  /* border-radius: 5px; */
+  /* height: 25px; */
+  cursor: pointer;
 }

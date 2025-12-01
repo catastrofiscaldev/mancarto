@@ -16,12 +16,13 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
         ubigeoFieldName: 'UBIGEO',
         platformUpdate: 'PCF',
         estadoInsValue: 1,
-        estadoValue: 1,
-        codUiValue: 1,
+        // estadoValue: 1,
+        // codUiValue: 1,
         estadoPartidaValue: 0,
         tipoResolucionValue: "1",
         enCartografiaValue: 1,
-        ntk: null,
+        tipDireccionValue: 1,
+        // ntk: null,
 
         Land: function Land() {
             this.ubigeo = 'UBIGEO';
@@ -47,8 +48,8 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             // this.idPred = 'ID_PRED';
             this.tipPred = 'TIP_PRED';
             // this.partida = 'PARTIDA';
-            this.resolutionType = 'resolutionType';
-            this.resolutionDocument = 'resolutionDocument';
+            this.resolutionType = 'TIPO_DOCUMENTO';
+            this.resolutionDocument = 'NUMERO_DOCUMENTO';
             // this.estadoPartida = 'ESTADO_PARTIDA';
             this.piso = 'PISO';
             // this.subLote = 'SUB_LOTE';
@@ -100,7 +101,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             // "COD_UI",
             // "COD_VER",
             // "ID_LOTE_P",
-            "ID", "NUM_EDIFICACION", "NUM_INTERIOR", "TIP_EDIFICACION", "TIP_INTERIOR", "SUB_LOTE", "ID_ARANC", "VAL_ACT", "ID_MZN_C", "resolutionType", "resolutionDocument", 'id_lote_puerta', 'longitude_puerta', 'latitude_puerta', 'lote_urbano_puerta', 'manzana_urbana_puerta'];
+            "ID", "NUM_EDIFICACION", "NUM_INTERIOR", "TIP_EDIFICACION", "TIP_INTERIOR", "SUB_LOTE", "ID_ARANC", "VAL_ACT", "ID_MZN_C", "TIPO_DOCUMENTO", "NUMERO_DOCUMENTO", 'id_ubicacion_puerta', 'longitude_puerta', 'latitude_puerta', 'lote_urbano_puerta', 'manzana_urbana_puerta', 'ID_LOTE_P'];
         },
         matchWithReceptionModel: function matchWithReceptionModel(object) {
             var modelRequests = this.receptionModelRequest();
@@ -770,6 +771,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                         _i.attributes[UbicacionCls.idUbicacion] = "" + _i.attributes[UbicacionCls.zonaUtm] + ubigeo + secuen;
                         _i.attributes[UbicacionCls.estadoIns] = _this6.estadoInsValue;
                         _i.attributes[UbicacionCls.enCartografia] = _this6.enCartografiaValue;
+                        _i.attributes[UbicacionCls.tipDireccion] = _this6.tipDireccionValue; // Dirección principal
                         secuen += 1;
                     }
                 } catch (err) {
@@ -810,11 +812,11 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             });
             var tipViaText = tipViaItem ? tipViaItem.name : tipVia;
             var tipEdificacionItem = domains.tipoEdificacion.find(function (item) {
-                return item.id === tipEdificacion && item.estado === 1;
+                return item.id.toString() === tipEdificacion && item.estado === 1;
             });
             var tipEdificacionText = tipEdificacionItem ? tipEdificacionItem.name : tipEdificacion;
             var tipInteriorItem = domains.tipoInterior.find(function (item) {
-                return item.id === tipInterior && item.estado === 1;
+                return item.id.toString() === tipInterior && item.estado === 1;
             });
             var tipInteriorText = tipInteriorItem ? tipInteriorItem.name : tipInterior;
 
@@ -837,11 +839,11 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             });
             var tipViaText = tipViaItem ? tipViaItem.name : tipVia;
             var tipEdificacionItem = domains.tipoEdificacion.find(function (item) {
-                return item.id === tipEdificacion && item.estado === 1;
+                return item.id.toString() === tipEdificacion && item.estado === 1;
             });
             var tipEdificacionText = tipEdificacionItem ? tipEdificacionItem.name : tipEdificacion;
             var tipInteriorItem = domains.tipoInterior.find(function (item) {
-                return item.id === tipInterior && item.estado === 1;
+                return item.id.toString() === tipInterior && item.estado === 1;
             });
             var tipInteriorText = tipInteriorItem ? tipInteriorItem.name : tipInterior;
 
@@ -953,7 +955,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                             landProps.attributes['VAL_ACT'] = rightOfWay.attributes['VAL_ACT'];
                             landProps.attributes['id_lote_sirv'] = rightOfWay.attributes['ID_LOTE'];
 
-                            landProps.attributes['id_lote_puerta'] = rightOfWay.attributes['ID_LOTE'];
+                            landProps.attributes['id_ubicacion_puerta'] = rightOfWay.attributes['ID_LOTE'];
                             landProps.attributes['longitude_puerta'] = rightOfWay.geometry.x;
                             landProps.attributes['latitude_puerta'] = rightOfWay.geometry.y;
                             landProps.attributes['lote_urbano_puerta'] = rightOfWay.attributes['LOT_URB'];
@@ -1297,7 +1299,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
         updateStatusRequests: function updateStatusRequests(lands, codRequests, caseRequest, ubigeo, config) {
             var _this9 = this;
 
-            var idLandInactive = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : [];
+            var lotsInactive = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : [];
 
             var deferred = new Deferred();
             var responseLands = UtilityCase.matchWithReceptionModel(lands);
@@ -1307,9 +1309,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                 id: codRequests,
                 results: responseLands,
                 idType: parseInt(caseRequest),
-                idLoteP: lands.map(function (land) {
-                    return land.attributes.ID_LOTE_P;
-                })
+                idLoteP: lotsInactive
                 // idLandInactive: idLandInactive
             };
             var _iteratorNormalCompletion5 = true;
@@ -1445,10 +1445,27 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             return deferred.promise;
         },
         buildHeaderNtk: function buildHeaderNtk(ntk) {
-            return {
-                "Authorization": "Bearer " + ntk,
-                "Content-Type": "application/json"
+            var body = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+
+            var headers = {
+                "Authorization": "Bearer " + ntk
             };
+            if (body) {
+                headers["Content-Type"] = "application/json";
+            }
+            return headers;
+        },
+        resolver: function resolver(url, ntk, params) {
+            var method = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'GET';
+
+            params = params || {};
+            var options = {};
+            options.headers = this.buildHeaderNtk(ntk, body = method === 'POST' ? false : true);
+            options.method = method;
+            if (method === 'POST') {
+                options.body = params;
+            }
+            return fetch(url, options);
         }
     };
 

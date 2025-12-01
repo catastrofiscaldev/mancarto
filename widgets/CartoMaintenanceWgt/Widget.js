@@ -260,21 +260,139 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     currentRightOfWayDraw: null,
     limitAnother: 10000,
     domains: null,
+    statePopupInfoWindow: null,
+    landsByLocation: null,
     postCreate: function postCreate() {
+      var _this = this;
+
       this.inherited(arguments);
-      // this._getAllLayers();
       this._createToolbar();
       this._setInitAppCm();
       this.geometryService = new GeometryService(this.config.geometryServiceUrl);
       selfCm = this;
-      // selfCm.config.ntk = paramsApp['ntk'];
-      // this._filterByDistrictCm();
-      // this._startExtentByDistrictCm();
-      // this._setToolbarDraw();
-      // esri.bundle.toolbars.draw.addPoint = esri.bundle.toolbars.draw.addPoint + "<br/>Pulsar <strong>CTRL</strong> para activar la alineación";
-      // esri.bundle.toolbars.draw.addShape = esri.bundle.toolbars.draw.addShape + "<br/>Pulsar <strong>CTRL</strong> para activar la alineación";
-      // esri.bundle.toolbars.draw.resume = esri.bundle.toolbars.draw.resume + "<br/>Pulsar <strong>CTRL</strong> para activar la alineación";
-      // esri.bundle.toolbars.draw.start = esri.bundle.toolbars.draw.start + "<br/>Pulsar <strong>CTRL</strong> para activar la alineación";
+
+      this.busyIndecatorInfoWindow = BusyIndicator.create({
+        target: this.map.infoWindow._contentPane,
+        backgroundOpacity: 1
+      });
+
+      var popupLandsRelation = {
+        title: "Ver Predios en esta ubicación",
+        className: "verPrediosActionClsCm",
+        id: "verPrediosActionIdCm",
+        callback: function callback() {
+          _this.busyIndecatorInfoWindow.show();
+          _this.statePopupInfoWindow = "showLandsByLocation";
+          var feature = selfCm.map.infoWindow.getSelectedFeature();
+
+          selfCm.map.infoWindow.domNode.querySelector(".verPrediosActionClsCm").style.display = "none";
+
+          if (!feature) {
+            console.warn("No hay feature seleccionada en el popup");
+            _this.busyIndecatorInfoWindow.hide();
+            return;
+          }
+
+          var layer = feature.getLayer ? feature.getLayer() : feature._layer;
+          if (layer && layer.id !== idLyrCfUbicacion) {
+            _this.busyIndecatorInfoWindow.hide();
+            return;
+          }
+
+          var idUbicacion = feature.attributes.ID_UBICACION;
+
+          var originalContent = selfCm.map.infoWindow._contentPane.innerHTML;
+          var originalTitle = selfCm.map.infoWindow._title.innerHTML;
+
+          var urlLandsByLocation = selfCm.config.landsbyIdLocationUrl + '?id_ubicacion=' + idUbicacion + '&status=1';
+          return UtilityCase.resolver(urlLandsByLocation, paramsApp.ntk).then(function (response) {
+            if (!response.ok) {
+              throw new Error('Error al obtener los predios desde el servidor.');
+            }
+            return response.json();
+          }).then(function (lands) {
+            _this.landsByLocation = lands.results;
+            console.log("landsByLocation", _this.landsByLocation);
+
+            var tbodyRows = _this.landsByLocation.map(function (predio, index) {
+              return '<tr>\n                    <td valign="top">' + (index + 1) + '</td>\n                    <td valign="top">' + predio.cup + '</td>\n                    <td><button class="btnShowDataPredioClsCm" ><i class=\'fas fa-eye\'></i></button></td>\n                  </tr>';
+            }).join("");
+
+            var html = '<div id="containerPopupCustomIdCm">\n                      <div id="headerButtonPopupIdCm">\n                        <button id="buttonPopupIdCm">Regresar</button>\n                      </div>\n                      <div id="containerTablePopupIdCm">\n                        <table id="tableRequestCm">\n                          <thead>\n                            <tr>\n                              <th>#</th>\n                              <th>C\xF3digo de predio \xFAnico</th>\n                              <th style="text-align: center;">Ver datos</th>\n                            </tr>\n                          </thead>\n                          <tbody>\n                            ' + tbodyRows + '\n                          </tbody>\n                        </table>\n                      </div>\n                      <div id="containerDetailLandIdCm" style="display:none; width: 100%; padding:5px;">\n                        <table id="tableDetailLandIdCm" style="width: 100%;">\n                        </table>\n                      </div>\n                    </div>';
+
+            selfCm.map.infoWindow._contentPane.style.padding = "0px";
+            selfCm.map.infoWindow.setContent(html);
+            selfCm.map.infoWindow.setTitle('Predios en Ubicaci\xF3n ' + idUbicacion);
+            selfCm.map.infoWindow.show(selfCm.map.infoWindow.location);
+
+            // Agregar eventos a los botones "Ver datos"
+            selfCm.map.infoWindow.domNode.querySelectorAll(".btnShowDataPredioClsCm").forEach(function (button) {
+              button.onclick = selfCm._showAttributesLandInPopup.bind(selfCm);
+            });
+
+            _this.busyIndecatorInfoWindow.hide();
+
+            setTimeout(function () {
+              var btn = document.getElementById("buttonPopupIdCm");
+              if (btn) {
+                btn.onclick = function () {
+                  if (selfCm.statePopupInfoWindow === "showLandsByLocation") {
+                    // restauramos popup original
+                    selfCm.map.infoWindow.setTitle(originalTitle);
+                    selfCm.map.infoWindow.setContent(originalContent);
+                    selfCm.map.infoWindow.show(selfCm.map.infoWindow.location);
+                    _this._restorePopupOriginalStyle();
+                    _this.statePopupInfoWindow = null;
+                  }
+                  if (selfCm.statePopupInfoWindow === "showLandsAttributes") {
+                    // restauramos vista de predios
+                    selfCm.map.infoWindow.domNode.querySelector("#containerTablePopupIdCm").style.display = "block";
+                    selfCm.map.infoWindow.domNode.querySelector("#containerDetailLandIdCm").style.display = "none";
+                    selfCm.statePopupInfoWindow = "showLandsByLocation";
+                  }
+                };
+              }
+            }, 50);
+          }).catch(function (err) {
+            _this.busyIndecatorInfoWindow.hide();
+            _this._showMessage(err.message, type = "error");
+          });
+          // Aquí ya llamas a tu endpoint para obtener predios, etc.
+        }
+      };
+      this.map.infoWindow.addActions([popupLandsRelation]);
+
+      this.map.infoWindow.on("hide", function () {
+        _this._restorePopupOriginalStyle();
+      });
+
+      this.map.infoWindow.on("selection-change", function () {
+        var feature = _this.map.infoWindow.getSelectedFeature();
+        if (!feature) return;
+        _this._restorePopupOriginalStyle();
+      });
+    },
+    _showAttributesLandInPopup: function _showAttributesLandInPopup(evt) {
+      this.statePopupInfoWindow = "showLandsAttributes";
+      // filtrar land by cup desde evt
+      var cup = evt.currentTarget.parentNode.parentElement.children[1].innerHTML;
+      var land = this.landsByLocation.find(function (land) {
+        return land.cup === cup;
+      });
+      if (!land) {
+        console.warn("No se encontró el predio con CUP:", cup);
+        return;
+      }
+
+      var attributesHtml = CaseInfo.buildLandAttributesContent(land, this.domains);
+
+      this.map.infoWindow.domNode.querySelector("#tableDetailLandIdCm").innerHTML = attributesHtml;
+      this.map.infoWindow.domNode.querySelector("#containerTablePopupIdCm").style.display = "none";
+      this.map.infoWindow.domNode.querySelector("#containerDetailLandIdCm").style.display = "block";
+    },
+    _restorePopupOriginalStyle: function _restorePopupOriginalStyle() {
+      this.map.infoWindow.domNode.querySelector(".verPrediosActionClsCm").style.display = "block";
+      this.map.infoWindow._contentPane.style.padding = "10px";
     },
     _getAllLayers: function _getAllLayers() {
       var deferred = new Deferred();
@@ -287,21 +405,27 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       return deferred.promise;
     },
     _setInitAppCm: function _setInitAppCm() {
-      var _this = this;
+      var _this2 = this;
 
       return this._getAllLayers().then(function (response) {
-        _this.layersMap = response;
-        _this._filterByDistrictCm();
+        _this2.layersMap = response;
+        _this2._filterByDistrictCm();
       }).then(function () {
-        return _this._startExtentByDistrictCm(_this.map);
+        return _this2._startExtentByDistrictCm(_this2.map);
       }).then(function () {
-        _this._setToolbarDraw();
+        _this2._setToolbarDraw();
       }).then(function () {
-        return _this._getDomains();
+        return _this2._getDomains();
+      }).then(function (response) {
+        if (!response.ok) {
+          throw new Error('Error al obtener los dominios desde el servidor.');
+        }
+        return response.json();
       }).then(function (domains) {
-        _this.domains = domains;
+        // console.log('domains', domains);
+        _this2.domains = domains;
       }).catch(function (err) {
-        _this._showMessage(err.message, type = "error");
+        _this2._showMessage(err.message, type = "error");
       });
     },
     _setToolbarDraw: function _setToolbarDraw() {
@@ -424,7 +548,6 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     startup: function startup() {
       this.inherited(arguments);
-
       this.busyIndicator = BusyIndicator.create({
         target: this.domNode.parentNode.parentNode,
         backgroundOpacity: 0
@@ -432,9 +555,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _getDomains: function _getDomains() {
       // const deferred = new Deferred();
-      var url = 'https://vmi2781913.contaboserver.net/dev/api/v1/master/domain/';
-      selfCm = this;
-      return this._callApiRestServices(url, {});
+      // const url = 'https://vmi2781913.contaboserver.net/dev/api/v1/master/domain/';
+      // return this._callApiRestServices(this.config.domains, {})
+      return UtilityCase.resolver(this.config.domains, paramsApp.ntk);
       // const deferred = new Deferred();
       // const requestOptions = {
       //   url: 'https://ws.mineco.gob.pe/serverdf/rest/services/pruebas/CARTO_FISCAL_AppTest/MapServer/queryDomains',
@@ -463,10 +586,11 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         return url.searchParams.append(key, params[key]);
       });
       //add bearer token paramsApp.ntk
-      return fetch(url, {
-        method: 'GET',
-        headers: UtilityCase.buildHeaderNtk(paramsApp.ntk)
-      }).then(function (response) {
+      // return fetch(url, {
+      //   method: 'GET',
+      //   headers: UtilityCase.buildHeaderNtk(paramsApp.ntk)
+      // })
+      return UtilityCase.resolver(url, paramsApp.ntk).then(function (response) {
         if (!response.ok) {
           selfCm.busyIndicator.hide();
           throw new Error("HTTP error " + response.status);
@@ -598,45 +722,6 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         // clearInterval(interval);
         self._removeLayerGraphic(idGraphicPredioSelectedCm);
       }, 1000);
-
-      // console.log(selfCm.currentLandTabRows);
-      // selfCm.busyIndicator.show();
-      // const deferred = new Deferred();
-      // const LandCls = new UtilityCase.Land();
-      // selfCm._removeLayerGraphic(idGraphicPredioSelectedCm);
-      // const prediosLayer = selfCm.layersMap.getLayerInfoById(idLyrCfPredios);
-      // const propertyLayer = new FeatureLayer(prediosLayer.getUrl(), {
-      //   mode: FeatureLayer.MODE_ONDEMAND,
-      //   outFields: ["OBJECTID"]
-      // });
-      // // crear una consulta para seleccionar la fila deseada
-      // const query = new Query();
-      // // @cpu
-      // query.where = `${_UBIGEO_FIELD} = '${paramsApp['ubigeo']}' and ${LandCls.codCpu} = '${cup}' and ${LandCls.estado} = 1`;
-
-      // // seleccionar la fila
-      // propertyLayer.selectFeatures(query, FeatureLayer.SELECTION_NEW)
-      //   .then(
-      //     results => {
-      //       if (results.length == 0) {
-      //         throw new Error(selfCm.nls.emptyLandSelected)
-      //       }
-      //       // if (selfCm.case == 2) {
-      //       //   if (results.length < 2) {
-      //       //     throw new Error(selfCm.nls.errorAcumulationLandsNumber);
-      //       //   }
-      //       // }
-      //       selfCm._handleFeatureSelected(results)
-      //       selfCm.busyIndicator.hide();
-      //       return deferred.resolve(results)
-      //     }
-      //   )
-      //   .catch(error => {
-      //     selfCm.busyIndicator.hide();
-      //     selfCm._showMessage(error.message, type = "error")
-      //     deferred.reject(error)
-      //   })
-      // return deferred.promise;
     },
     _openSupportingDocument: function _openSupportingDocument(evt) {
       // check if value is empty
@@ -739,8 +824,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     _getLandsOriginalsTab: function _getLandsOriginalsTab(idSolicitud) {
       var self = this;
       var deferred = new Deferred();
-      var urlOriginal = '' + self.config.landsByApplicationUrl + idSolicitud + '/';
-      fetch(urlOriginal).then(function (response) {
+      var urlOriginal = '' + self.config.landsByApplicationUrl + idSolicitud + '/?tipo=1';
+      // fetch(urlOriginal)
+      UtilityCase.resolver(urlOriginal, paramsApp.ntk).then(function (response) {
         if (!response.ok) {
           throw new Error("HTTP error " + response.status);
         }
@@ -761,17 +847,17 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       return deferred.promise;
     },
     _getOriginalData: function _getOriginalData(idSolicitud) {
-      var _this2 = this;
+      var _this3 = this;
 
       return this._getLandsOriginalsTab(idSolicitud)
       // .then(landsTab => this._getLandsOriginals())
 
       .then(function (idLots) {
-        return _this2._getUbicacionOriginals(idLots);
+        return _this3._getUbicacionOriginals(idLots);
       }).then(function (idLots) {
-        return _this2._getLotsOriginals(idLots);
+        return _this3._getLotsOriginals(idLots);
       }).then(function (idLots) {
-        return _this2._getExtentBlock(idLots);
+        return _this3._getExtentBlock(idLots);
       }).then(function (idLots) {
         return idLots;
       }).catch(function (error) {
@@ -799,7 +885,42 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       return selfCm._zoomExtentToLote();
     },
     _toggleBodyCaseInfo: function _toggleBodyCaseInfo(evt) {
-      this.closest('.caseInfoClsCm').querySelector('.bodyPredInfoClsCm').classList.toggle('active');
+      var bodyElement = this.closest('.caseInfoClsCm').querySelector('.bodyPredInfoClsCm');
+      bodyElement.classList.toggle('active');
+
+      // Si se está abriendo (active), ajustar textareas después de un pequeño delay
+      if (bodyElement.classList.contains('active')) {
+        setTimeout(function () {
+          selfCm._autoResizeTextareas();
+        }, 50);
+      }
+    },
+    _autoResizeTextareas: function _autoResizeTextareas() {
+      // Función para ajustar la altura de un textarea según su contenido
+      var resizeTextarea = function resizeTextarea(textarea) {
+        // Reset height to recalculate
+        textarea.style.height = '32px';
+        // Set to scroll height plus a small buffer
+        var newHeight = Math.max(32, textarea.scrollHeight + 2);
+        textarea.style.height = newHeight + 'px';
+      };
+
+      // Usar setTimeout para asegurar que el DOM esté completamente renderizado
+      setTimeout(function () {
+        // Seleccionar todos los textareas con la clase auto-resize-textarea
+        var textareas = document.querySelectorAll('.bodyPredInfoClsCm textarea.auto-resize-textarea');
+
+        textareas.forEach(function (textarea) {
+          // Ajustar altura inicial
+          resizeTextarea(textarea);
+
+          // Agregar listener para cambios futuros (por si acaso)
+          textarea.removeEventListener('input', resizeTextarea); // Evitar duplicados
+          textarea.addEventListener('input', function () {
+            resizeTextarea(this);
+          });
+        });
+      }, 100);
     },
     _requestCaseInfo: function _requestCaseInfo() {
       selfCm.busyIndicator.show();
@@ -807,15 +928,21 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       var urlDocSupport = '' + selfCm.config.applicationListUrl + selfCm.codRequestsCm + '/';
       var urlAffectedLands = '' + selfCm.config.affectedLands + selfCm.codRequestsCm + '/?limit=' + selfCm.limitAnother;
 
-      Promise.all([selfCm._getOriginalData(selfCm.codRequestsCm), fetch(urlResults).then(function (response) {
+      Promise.all([selfCm._getOriginalData(selfCm.codRequestsCm),
+      // fetch(urlResults)
+      UtilityCase.resolver(urlResults, paramsApp.ntk).then(function (response) {
         if (!response.ok) {
           selfCm.busyIndicator.hide();
           throw new Error("HTTP error " + response.status);
         }
         return response.json();
-      }), fetch(urlDocSupport).then(function (response) {
+      }),
+      // fetch(urlDocSupport)
+      UtilityCase.resolver(urlDocSupport, paramsApp.ntk).then(function (response) {
         return response.json();
-      }), fetch(urlAffectedLands).then(function (response) {
+      }),
+      // fetch(urlAffectedLands)
+      UtilityCase.resolver(urlAffectedLands, paramsApp.ntk).then(function (response) {
         if (!response.ok) {
           selfCm.busyIndicator.hide();
           throw new Error("HTTP error " + response.status);
@@ -850,6 +977,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         dojo.query("#showInfoDocCm")[0].value = responseDocSupport.support;
         dojo.query('.CtnOriginalClsCm')[0].innerHTML = rows.join('');
 
+        // Auto-resize textareas
+        selfCm._autoResizeTextareas();
+
         if (selfCm.case == 2 || selfCm.case == 3) {
           if (responseAffectedLands.results.length > 0) {
             var rowsAffected = responseAffectedLands.results.map(function (i, idx) {
@@ -875,6 +1005,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           dojo.query('.CtnResultClsCm')[0].innerHTML = '';
           dojo.query('.lblResultsClsCm').removeClass('active');
         }
+
+        // Auto-resize textareas in results
+        selfCm._autoResizeTextareas();
 
         dojo.query(".colapsePredInfoClsCm").on('click', selfCm._toggleBodyCaseInfo);
 
@@ -1026,7 +1159,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     },
     _FormResult: function _FormResult(id_solicitud, caseCm) {
       selfCm.busyIndicator.show();
-      var urlPredioResults = '' + selfCm.config.resultsByApplication + id_solicitud + '/?limit=' + selfCm.limitAnother;
+      // const urlPredioResults = `${selfCm.config.resultsByApplication}${id_solicitud}/?limit=${selfCm.limitAnother}`
+      var urlPredioResults = '' + selfCm.config.landsByApplicationUrl + id_solicitud + '/?tipo=2';
       if (caseCm == Deactivate.nameCase) {
         selfCm.busyIndicator.hide();
         selfCm._showMessage(selfCm.nls.resultDeactivate);
@@ -1038,8 +1172,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           dojo.query("#titleCaseResult")[0].innerHTML = '<span>Solicitud ' + id_solicitud + ': ' + caseCm + '</span>';
 
           var rows = response.results.map(function (predio, index) {
-            return '<tr><td class="center-aligned">' + (index + 1) + '</td>\n                  <td>' + predio['cup'] + '</td>\n                  <td>' + predio['address'] + '</td>\n                  <td class="center-aligned">\n                    <span id="' + predio['cup'] + '_search" class="zoomPredioResultClsCm"><i class="fas fa-search"></i></span>\n                  </td></tr>';
+            return '<tr><td class="center-aligned">' + (index + 1) + '</td>\n                  <td>' + predio['cup'] + '</td>\n                  <td>' + (predio.tipoDireccion === 1 ? predio.urbanAddress : predio.municipalAddress) + '</td>\n                  <td class="center-aligned">\n                    <span id="' + predio['cup'] + '_search" class="zoomPredioResultClsCm"><i class="fas fa-search"></i></span>\n                  </td></tr>';
           });
+          selfCm.currentLandTabRows = response.results;
           selfCm.bodyTbResultsApCm.innerHTML = rows.join('');
           dojo.query('.zoomPredioResultClsCm').on('click', selfCm._centerAtPredioResult);
           selfCm.casesCtnApCm.classList.remove("active");
@@ -1081,7 +1216,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       toolbarCm.on("draw-end", this._addToMap.bind(this));
     },
     _addToMap: function _addToMap(evt) {
-      var _this3 = this;
+      var _this4 = this;
 
       var deferred = new Deferred();
       if (evt.geometry.type === "point") {
@@ -1090,7 +1225,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         this.map.snappingManager.getSnappingPoint(screenPoint).then(function (value) {
           if (!value) {
             // open showMessage but reference this parent scope
-            var error = new Error(_this3.nls.errorSnapingLocate);
+            var error = new Error(_this4.nls.errorSnapingLocate);
             return deferred.reject(error);
           }
 
@@ -1100,15 +1235,15 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             return geometryEngine.intersects(i.geometry, pointGeographic);
           });
 
-          if (_this3.statusDrawingRightOfWay) {
-            _this3.currentRightOfWayDraw = pointGraphic[0];
+          if (_this4.statusDrawingRightOfWay) {
+            _this4.currentRightOfWayDraw = pointGraphic[0];
           } else {
-            _this3.currentLandDraw = pointGraphic[0];
+            _this4.currentLandDraw = pointGraphic[0];
           }
 
-          if (!_this3.statusDrawingRightOfWay) {
-            if (_this3.currentLandDraw.attributes.tipLot === 2) {
-              return _this3._showMessageConfirm("El lote seleccionado es mediterraneo\nAhora debe seleccionar el lote paso de servidumbre");
+          if (!_this4.statusDrawingRightOfWay) {
+            if (_this4.currentLandDraw.attributes.tipLot === 2) {
+              return _this4._showMessageConfirm("El lote seleccionado es mediterraneo\nAhora debe seleccionar el lote paso de servidumbre");
             }
           }
           // if (this.statusDrawingRightOfWay) {
@@ -1146,38 +1281,38 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             if (!response) {
               return deferred.reject();
             }
-            _this3.statusDrawingRightOfWay = true;
+            _this4.statusDrawingRightOfWay = true;
             // get predio layer and filter
             // this.map.getLayer(idLyrCfPredios).setVisibility(false);
-            _this3.map.getLayer(idGraphicUbicacion).setVisibility(false);
+            _this4.map.getLayer(idGraphicUbicacion).setVisibility(false);
 
-            if (_this3.caseCm == 3 || _this3.caseCm == 2) {
-              _this3.map.getLayer(idGraphicLoteCm).setVisibility(false);
-              _this3.map.getLayer(idGraphicFrenteLote).setVisibility(false);
+            if (_this4.caseCm == 3 || _this4.caseCm == 2) {
+              _this4.map.getLayer(idGraphicLoteCm).setVisibility(false);
+              _this4.map.getLayer(idGraphicFrenteLote).setVisibility(false);
             }
 
-            if (_this3.caseCm == 3) {
-              _this3.map.getLayer(idGraphicLineaDivision).setVisibility(false);
-              _this3.map.getLayer(idGraphicLabelLineaDivision).setVisibility(false);
+            if (_this4.caseCm == 3) {
+              _this4.map.getLayer(idGraphicLineaDivision).setVisibility(false);
+              _this4.map.getLayer(idGraphicLabelLineaDivision).setVisibility(false);
             };
 
-            _this3.map.getLayer(idGraphicPredioByMaintenance).setVisibility(false);
-            _this3.map.getLayer(idLyrCfUbicacion).setVisibility(false);
-            _this3.containerToolDrawApCm.classList.remove('active');
-            _this3.containerHelpRightOfWayApCm.classList.toggle('active');
-            var stateWidget = _this3.getParent().getParent().domNode.getElementsByClassName("bar max");
+            _this4.map.getLayer(idGraphicPredioByMaintenance).setVisibility(false);
+            _this4.map.getLayer(idLyrCfUbicacion).setVisibility(false);
+            _this4.containerToolDrawApCm.classList.remove('active');
+            _this4.containerHelpRightOfWayApCm.classList.toggle('active');
+            var stateWidget = _this4.getParent().getParent().domNode.getElementsByClassName("bar max");
             if (stateWidget.length > 0) {
               stateWidget[0].click();
             }
-            _this3.map.setExtent(_this3.extentBlock.expand(2));
-            _this3.busyIndicator.show();
+            _this4.map.setExtent(_this4.extentBlock.expand(2));
+            _this4.busyIndicator.show();
 
             var query = new Query();
-            query.where = _this3.pointLotsNotMediterrnean;
+            query.where = _this4.pointLotsNotMediterrnean;
             query.returnGeometry = true;
             query.outFields = ["*"];
             query.outSpatialReference = new SpatialReference(4326);
-            var queryTask = new QueryTask(_this3.map.getLayer(idLyrCfUbicacion).url);
+            var queryTask = new QueryTask(_this4.map.getLayer(idLyrCfUbicacion).url);
             return queryTask.execute(query);
           }
           return undefined;
@@ -1187,7 +1322,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
               return i.attributes.tipLot === 1;
             });
             var pointLostSnapping = response.features.concat(mediterraneanPointLot);
-            _this3._removeLayerGraphic(idGraphicCandidateRightOfWay);
+            _this4._removeLayerGraphic(idGraphicCandidateRightOfWay);
 
             var _iteratorNormalCompletion2 = true;
             var _didIteratorError2 = false;
@@ -1223,10 +1358,10 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
             ;
 
-            _this3.map.addLayer(graphicCandidateRightOfWay);
+            _this4.map.addLayer(graphicCandidateRightOfWay);
 
             toolbarCm.deactivate();
-            _this3.map.enableSnapping({
+            _this4.map.enableSnapping({
               layerInfos: [{
                 id: graphicCandidateRightOfWay.id,
                 layer: graphicCandidateRightOfWay,
@@ -1238,24 +1373,24 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             toolbarCm.activate(Draw["POINT"]);
           }
         }).then(function () {
-          if (_this3.currentLandDraw && !_this3.statusDrawingRightOfWay) {
+          if (_this4.currentLandDraw && !_this4.statusDrawingRightOfWay) {
             return true;
-          } else if (_this3.currentRightOfWayDraw && _this3.statusDrawingRightOfWay) {
-            _this3.statusDrawingRightOfWay = false;
-            _this3.map.getLayer(idGraphicCandidateRightOfWay).clear();
+          } else if (_this4.currentRightOfWayDraw && _this4.statusDrawingRightOfWay) {
+            _this4.statusDrawingRightOfWay = false;
+            _this4.map.getLayer(idGraphicCandidateRightOfWay).clear();
             // this.map.getLayer(idLyrCfPredios).setVisibility(true);
-            _this3.map.getLayer(idGraphicUbicacion).setVisibility(true);
-            if (_this3.caseCm == 3 || _this3.caseCm == 2) {
-              _this3.map.getLayer(idGraphicLoteCm).setVisibility(true);
-              _this3.map.getLayer(idGraphicFrenteLote).setVisibility(true);
+            _this4.map.getLayer(idGraphicUbicacion).setVisibility(true);
+            if (_this4.caseCm == 3 || _this4.caseCm == 2) {
+              _this4.map.getLayer(idGraphicLoteCm).setVisibility(true);
+              _this4.map.getLayer(idGraphicFrenteLote).setVisibility(true);
             };
-            if (_this3.caseCm == 3) {
-              _this3.map.getLayer(idGraphicLineaDivision).setVisibility(true);
-              _this3.map.getLayer(idGraphicLabelLineaDivision).setVisibility(true);
+            if (_this4.caseCm == 3) {
+              _this4.map.getLayer(idGraphicLineaDivision).setVisibility(true);
+              _this4.map.getLayer(idGraphicLabelLineaDivision).setVisibility(true);
             };
-            _this3.map.getLayer(idLyrCfUbicacion).setVisibility(true);
-            _this3.map.getLayer(idGraphicPredioByMaintenance).setVisibility(true);
-            _this3.containerHelpRightOfWayApCm.classList.toggle('active');
+            _this4.map.getLayer(idLyrCfUbicacion).setVisibility(true);
+            _this4.map.getLayer(idGraphicPredioByMaintenance).setVisibility(true);
+            _this4.containerHelpRightOfWayApCm.classList.toggle('active');
             return true;
           } else {
             return false;
@@ -1265,7 +1400,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             return undefined;
           };
           // const graphic = new Graphic(this.currentLandDraw, symbolPredio);
-          var graphicDrawLand = new Graphic(_this3.currentLandDraw.geometry, symbolPredio);
+          var graphicDrawLand = new Graphic(_this4.currentLandDraw.geometry, symbolPredio);
 
           // if (this.case == 2) {
           //   const graphicLayer = new GraphicsLayer({
@@ -1277,47 +1412,47 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           // }
           // else if (this.case == 3) {
           graphicDrawLand['attributes'] = {
-            cpm: _this3.cpm,
-            id: _this3.idPredio,
-            resolutionType: _this3.resolutionType,
-            resolutionDocument: _this3.resolutionDocument,
-            floor: _this3.floor,
-            urbanLotNumber: _this3.urbanLotNumber,
-            tipLot: _this3.currentRightOfWayDraw ? 2 : 1,
-            mediterraneanCoords: _this3.currentRightOfWayDraw,
-            urbanSublotNumber: _this3.urbanSublotNumber,
-            indoorNumber: _this3.indoorNumber,
-            indoorType: _this3.indoorType,
-            edificationNumber: _this3.edificationNumber,
-            edificationType: _this3.edificationType
+            cpm: _this4.cpm,
+            id: _this4.idPredio,
+            resolutionType: _this4.resolutionType,
+            resolutionDocument: _this4.resolutionDocument,
+            floor: _this4.floor,
+            urbanLotNumber: _this4.urbanLotNumber,
+            tipLot: _this4.currentRightOfWayDraw ? 2 : 1,
+            mediterraneanCoords: _this4.currentRightOfWayDraw,
+            urbanSublotNumber: _this4.urbanSublotNumber,
+            indoorNumber: _this4.indoorNumber,
+            indoorType: _this4.indoorType,
+            edificationNumber: _this4.edificationNumber,
+            edificationType: _this4.edificationType
           };
           graphicLayerPredioByMaintenance.add(graphicDrawLand);
-          if (_this3.currentRightOfWayDraw) {
-            var graphicDrawRightOfWay = new Graphic(_this3.currentRightOfWayDraw.geometry, symbolRightOfWay);
+          if (_this4.currentRightOfWayDraw) {
+            var graphicDrawRightOfWay = new Graphic(_this4.currentRightOfWayDraw.geometry, symbolRightOfWay);
             graphicDrawRightOfWay['attributes'] = {
-              id: _this3.idPredio
+              id: _this4.idPredio
             };
             graphicRightOfWay.add(graphicDrawRightOfWay);
           }
 
-          _this3.currentLandDraw = null;
-          _this3.currentRightOfWayDraw = null;
-          if (_this3.case == 3) {
-            _this3.containerToolDrawApCm.classList.add('active');
+          _this4.currentLandDraw = null;
+          _this4.currentRightOfWayDraw = null;
+          if (_this4.case == 3) {
+            _this4.containerToolDrawApCm.classList.add('active');
           }
           // }
-          _this3.map.setInfoWindowOnClick(true);
+          _this4.map.setInfoWindowOnClick(true);
           toolbarCm.deactivate();
-          _this3._removeClassActiveButton();
-          _this3.busyIndicator.hide();
-          var stateWidget = _this3.getParent().getParent().domNode.getElementsByClassName("bar min");
+          _this4._removeClassActiveButton();
+          _this4.busyIndicator.hide();
+          var stateWidget = _this4.getParent().getParent().domNode.getElementsByClassName("bar min");
           if (stateWidget.length > 0) {
             stateWidget[0].click();
           }
           // this._zoomExtentToLote();
         }).catch(function (error) {
-          _this3.busyIndicator.hide();
-          _this3._showMessage(error.message, type = "error");
+          _this4.busyIndicator.hide();
+          _this4._showMessage(error.message, type = "error");
         });
       } else if (evt.geometry.type === "polyline") {
         selfCm._divisorLine(evt.geometry);
@@ -2678,6 +2813,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           Acumulation.caseRequest = self.case;
           Acumulation.queryBlock = self.arancel;
           Acumulation.queryLots = self.lotesQuery;
+          Acumulation.domains = self.domains;
 
           Acumulation.executeAcumulation().then(function (response) {
             // self._removeLayerGraphic(idGraphicPredioCm);
@@ -2710,7 +2846,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       });
     },
     _executeSubdivisionGpService: function _executeSubdivisionGpService(evt) {
-      var _this4 = this;
+      var _this5 = this;
 
       var layerLote = this.map.getLayer(idGraphicLoteCm);
 
@@ -2787,21 +2923,22 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
       this._showMessageConfirm().then(function (result) {
         if (result) {
-          _this4.busyIndicator.show();
-          _this4._addWarningMessageExecute();
+          _this5.busyIndicator.show();
+          _this5._addWarningMessageExecute();
           var labelCodLotesLayerGraphic = labelCodLotesLayer.graphics;
 
-          SubDivision.blockUrl = _this4.layersMap.getLayerInfoById(idLyrCfManzanaUrb).getUrl();
-          SubDivision.lotUrl = _this4.layersMap.getLayerInfoById(idLyrCfLotes).getUrl();
-          SubDivision.ubicacionUrl = _this4.layersMap.getLayerInfoById(idLyrCfUbicacion).getUrl();
-          SubDivision.arancelUrl = _this4.layersMap.getLayerInfoById(idLyrCfArancel).getUrl();
+          SubDivision.blockUrl = _this5.layersMap.getLayerInfoById(idLyrCfManzanaUrb).getUrl();
+          SubDivision.lotUrl = _this5.layersMap.getLayerInfoById(idLyrCfLotes).getUrl();
+          SubDivision.ubicacionUrl = _this5.layersMap.getLayerInfoById(idLyrCfUbicacion).getUrl();
+          SubDivision.arancelUrl = _this5.layersMap.getLayerInfoById(idLyrCfArancel).getUrl();
           // SubDivision.landUrl = this.layersMap.getLayerInfoById(idLyrCfPredios).getUrl();
-          SubDivision.cadastralBlockUrl = _this4.layersMap.getLayerInfoById(idLyrCfManzana).getUrl();
+          SubDivision.cadastralBlockUrl = _this5.layersMap.getLayerInfoById(idLyrCfManzana).getUrl();
           SubDivision.landsRegisterByRequests = selfCm.currentLandTabRows;
-          SubDivision.currentLotsRows = _this4.currentLotsRows;
-          SubDivision.newUbicacionGraphics = _this4.map.getLayer(idGraphicUbicacion).graphics;
+          console.log(_this5.currentLotsRows);
+          SubDivision.currentLotsRows = _this5.currentLotsRows;
+          SubDivision.newUbicacionGraphics = _this5.map.getLayer(idGraphicUbicacion).graphics;
           SubDivision.newLandsGraphics = graphicLayerPredioByMaintenance.graphics;
-          SubDivision.queryBlock = _this4.arancel;
+          SubDivision.queryBlock = _this5.arancel;
           // SubDivision.newLandsGraphics.forEach((i) => {
           //   i['id'] = i.attributes.id.split('_')[1],
           //     i['codPre'] = i.attributes.cpm,
@@ -2821,38 +2958,38 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             };
           });
 
-          SubDivision.config = _this4.config;
+          SubDivision.config = _this5.config;
           SubDivision.ubigeo = paramsApp['ubigeo'];
           SubDivision.user = paramsApp['username'];
-          SubDivision.caseRequest = _this4.case;
-          SubDivision.codRequests = _this4.codRequestsCm;
-          SubDivision.queryLots = _this4.lotesQuery;
+          SubDivision.caseRequest = _this5.case;
+          SubDivision.codRequests = _this5.codRequestsCm;
+          SubDivision.queryLots = _this5.lotesQuery;
 
-          SubDivision.domains = _this4.domains;
+          SubDivision.domains = _this5.domains;
 
           SubDivision.executeSubdivision().then(function (response) {
             graphicLayerPredioByMaintenance.clear();
             graphicLayerLineaDivision.clear();
             graphicLayerLabelLineaDivision.clear();
             graphicRightOfWay.clear();
-            _this4._removeLayerGraphic(idGraphicLoteCm);
-            _this4._removeLayerGraphic(idGraphicUbicacion);
-            _this4._removeLayerGraphic(idGraphicFrenteLote);
-            _this4._removeLayerGraphic(idGraphicLabelCodLote);
+            _this5._removeLayerGraphic(idGraphicLoteCm);
+            _this5._removeLayerGraphic(idGraphicUbicacion);
+            _this5._removeLayerGraphic(idGraphicFrenteLote);
+            _this5._removeLayerGraphic(idGraphicLabelCodLote);
             // this.map.getLayer(idLyrCatastroFiscal).setVisibility(false)
             // this.map.getLayer(idLyrCatastroFiscal).setVisibility(true)
-            _this4._refreshLayersCF();
-            _this4._FormResult(_this4.codRequestsCm, _this4.caseDescription);
-            _this4.busyIndicator.hide();
-            _this4._removeWarningMessageExecute();
-            _this4._showMessage(_this4.nls.successProcess, type = "success");
+            _this5._refreshLayersCF();
+            _this5._FormResult(_this5.codRequestsCm, _this5.caseDescription);
+            _this5.busyIndicator.hide();
+            _this5._removeWarningMessageExecute();
+            _this5._showMessage(_this5.nls.successProcess, type = "success");
           }).catch(function (error) {
-            _this4._removeWarningMessageExecute();
-            _this4.busyIndicator.hide();
+            _this5._removeWarningMessageExecute();
+            _this5.busyIndicator.hide();
             if (error.name === CustomException.ErrorEqualUrbanLotWithinBlock.name) {
               return;
             } else {
-              _this4._showMessage(error.message, type = "error");
+              _this5._showMessage(error.message, type = "error");
             }
           });
           // .finally(() => {
@@ -2925,7 +3062,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       dojo.query("#loadingTextCustom")[0].remove();
     },
     _executeIndependenceLands: function _executeIndependenceLands(evt) {
-      var _this5 = this;
+      var _this6 = this;
 
       if (!this.currentLotsRows) {
         this._showMessage(this.nls.emptyLotRequests, type = "error");
@@ -2938,33 +3075,34 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
 
       this._showMessageConfirm().then(function (result) {
         if (result) {
-          _this5.busyIndicator.show();
-          _this5._addWarningMessageExecute();
-          Independence.codRequest = _this5.codRequestsCm;
-          Independence.cadastralBlockUrl = _this5.layersMap.getLayerInfoById(idLyrCfManzana).getUrl();
+          _this6.busyIndicator.show();
+          _this6._addWarningMessageExecute();
+          Independence.codRequest = _this6.codRequestsCm;
+          Independence.cadastralBlockUrl = _this6.layersMap.getLayerInfoById(idLyrCfManzana).getUrl();
           Independence.ubigeo = paramsApp['ubigeo'];
           Independence.user = paramsApp['username'];
           // Independence.newLands = LandAssignment.lands;
           Independence.newLands = graphicLayerPredioByMaintenance.graphics;
           // Independence.urlLands = this.map.getLayer(idLyrCfPredios).url;
-          Independence.matrixLand = _this5.currentLandTabRows;
-          Independence.config = _this5.config;
-          Independence.currentLotsRows = _this5.currentLotsRows;
-          Independence.currentUbicacionRows = _this5.currentUbicacionRows;
-          Independence.caseRequest = _this5.case;
+          Independence.matrixLand = _this6.currentLandTabRows;
+          Independence.config = _this6.config;
+          Independence.currentLotsRows = _this6.currentLotsRows;
+          Independence.currentUbicacionRows = _this6.currentUbicacionRows;
+          Independence.caseRequest = _this6.case;
+          Independence.domains = _this6.domains;
 
           Independence.executeIndependence().then(function (response) {
             graphicLayerPredioByMaintenance.clear();
             graphicRightOfWay.clear();
-            _this5._removeLayerGraphic(idGraphicLoteCm);
-            _this5._removeLayerGraphic(idGraphicUbicacion);
-            _this5._removeLayerGraphic(idGraphicFrenteLote);
-            _this5._removeLayerGraphic(idGraphicLabelCodLote);
-            _this5._refreshLayersCF();
-            _this5._FormResult(_this5.codRequestsCm, _this5.caseDescription);
-            _this5.busyIndicator.hide();
-            _this5._removeWarningMessageExecute();
-            _this5._showMessage(_this5.nls.successProcess, type = "success");
+            _this6._removeLayerGraphic(idGraphicLoteCm);
+            _this6._removeLayerGraphic(idGraphicUbicacion);
+            _this6._removeLayerGraphic(idGraphicFrenteLote);
+            _this6._removeLayerGraphic(idGraphicLabelCodLote);
+            _this6._refreshLayersCF();
+            _this6._FormResult(_this6.codRequestsCm, _this6.caseDescription);
+            _this6.busyIndicator.hide();
+            _this6._removeWarningMessageExecute();
+            _this6._showMessage(_this6.nls.successProcess, type = "success");
             // LandAssignment.removeAllGraphics();
             // this._refreshLayersCF();
             // // this.map.getLayer(idLyrCatastroFiscal).setVisibility(false)
@@ -2974,9 +3112,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             // this._removeWarningMessageExecute();
             // this._showMessage(this.nls.successProcess, type = "success");
           }).catch(function (error) {
-            _this5._removeWarningMessageExecute();
-            _this5._showMessage(error.message, type = "error");
-            _this5.busyIndicator.hide();
+            _this6._removeWarningMessageExecute();
+            _this6._showMessage(error.message, type = "error");
+            _this6.busyIndicator.hide();
           });
           // .finally(() => {
           //   this.currentLotsRows = null;
@@ -3057,10 +3195,12 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
         data.append('description', selfCm.textAreaObsApCm.value);
         data.append('img', selfCm.imgUploadApCm.files[0]);
 
-        return fetch(selfCm.config.observationUrl, {
-          method: 'POST',
-          body: data
-        }).then(function (response) {
+        // return fetch(selfCm.config.observationUrl, {
+        //   method: 'POST',
+        //   body: data,
+        //   headers: UtilityCase.buildHeaderNtk(paramsApp.ntk, body=false)
+        // })
+        UtilityCase.resolver(selfCm.config.observationUrl, paramsApp.ntk, data, method = 'POST').then(function (response) {
           if (!response.ok) {
             selfCm.busyIndicator.hide();
             throw new Error('HTTP error! status: ' + response.status);

@@ -16,6 +16,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/reque
         caseRequest: null, // @param
         currentLotsRows: null, //@param
         currentUbicacionRows: null, //@param
+        domains: null, // @param
 
 
         getMatrixLand: function getMatrixLand() {
@@ -146,10 +147,10 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/reque
         executeIndependence: function executeIndependence() {
             var _this2 = this;
 
-            return UtilityCase.checkResolutionDocument(this.ubigeo, this.newLands, this.config.checkResolutionDocument, this.config, ntk)
+            return UtilityCase.checkResolutionDocument(this.ubigeo, this.newLands, this.config.checkResolutionDocument, this.config.ntk)
             // .then(() => this.getUiOfLot())
             .then(function () {
-                return UtilityCase.translateFieldsUbicacionToLand(_this2.currentUbicacionRows, _this2.newLands);
+                return UtilityCase.translateFieldsUbicacionToLand(_this2.currentUbicacionRows, _this2.newLands, _this2.domains);
             })
             // .then(uiValue => this.calculateLandFields(uiValue))
             .then(function (lands) {
@@ -157,10 +158,10 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/reque
             })
             // .then(lands => UtilityCase.calculateIdPred(lands, this.urlLands, this.ubigeo))
             // .then(lands => UtilityCase.updateRowsGeneric(lands, this.codRequest, this.user, 1))
-            // .then(lands => {
-            //     this.lands = lands;
-            //     return UtilityCase.addDataNew([], [], lands, this.config)
-            // })
+            .then(function (lands) {
+                _this2.lands = lands;
+                // return UtilityCase.addDataNew([], [], lands, this.config)
+            })
             // .then(lands => this.getMatrixLand())
             // .then(matrixLand => this.updateMatrixLand(matrixLand))
             .then(function (results) {
