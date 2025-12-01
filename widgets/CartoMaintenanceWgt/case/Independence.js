@@ -15,7 +15,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/reque
         matrixLandDomain: '2',
         caseRequest: null, // @param
         currentLotsRows: null, //@param
-        currentPoinLotsRows: null, //@param
+        currentUbicacionRows: null, //@param
 
 
         getMatrixLand: function getMatrixLand() {
@@ -73,84 +73,98 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/reque
 
             return deferred.promise;
         },
-        calculateLandFields: function calculateLandFields(uiValue) {
+
+
+        // calculateLandFields(uiValue) {
+        //     const deferred = new Deferred();
+        //     const LandCls = new UtilityCase.Land();
+        //     const LotCls = new UtilityCase.Lot();
+        //     const lands = [];
+        //     // let uiValue = UtilityCase.codUiValue
+
+        //     UtilityCase.getFeatureSchema(this.urlLands)
+        //         .then(landSchema => {
+        //             this.newLands.forEach(land => {
+        //                 const landProps = landSchema.clone();
+        //                 landProps.attributes = UtilityCase.attributeTransfer({
+        //                     objTarget: landSchema.attributes,
+        //                     objBase: land.pointLot.attributes,
+        //                     omitPropsDefault: false
+        //                 });
+        //                 landProps.attributes[LandCls.codPre] = land.cpm;
+        //                 landProps.attributes[LandCls.codUi] = uiValue;
+        //                 landProps.attributes[LandCls.estado] = UtilityCase.estadoValue;
+        //                 landProps.attributes[LandCls.coordX] = land.pointLot.geometry.x;
+        //                 landProps.attributes[LandCls.coordY] = land.pointLot.geometry.y;
+        //                 landProps.attributes[LotCls.fuente] = this.codRequest;
+        //                 landProps.attributes[LotCls.nomPc] = UtilityCase.platformUpdate;
+        //                 landProps.attributes[LotCls.nomUser] = this.user;
+        //                 landProps.attributes[LandCls.tipPred] = land.tipPred;
+        //                 landProps.attributes[LandCls.codVer] = UtilityCase.getValueCodVer(
+        //                     landProps.attributes[LandCls.ranCpu],
+        //                     uiValue
+        //                 );
+        //                 landProps.attributes[LandCls.codCpu] = UtilityCase.generateCodCpu(
+        //                     landProps.attributes[LandCls.ranCpu],
+        //                     landProps.attributes[LandCls.codVer],
+        //                     codUi = uiValue
+        //                 );
+
+        //                 landProps.attributes[LandCls.dirMun] = UtilityCase.generateDirMun(
+        //                     landProps.attributes[LandCls.tipVia],
+        //                     landProps.attributes[LandCls.nomVia],
+        //                     landProps.attributes[LandCls.numMun]
+        //                 );
+        //                 landProps.attributes[LandCls.dirUrb] = UtilityCase.generateDirUrb(
+        //                     landProps.attributes[LandCls.tipVia],
+        //                     landProps.attributes[LandCls.nomVia],
+        //                     landProps.attributes[LandCls.numMun]
+        //                 );
+        //                 landProps.attributes[LotCls.anoCart] = new Date().getFullYear();
+        //                 // if (land.resolutionType === UtilityCase.tipoResolucionValue) {
+        //                 //     landProps.attributes[LandCls.partida] = land.resolutionDocument
+        //                 //     landProps.attributes[LandCls.estadoPartida] = UtilityCase.estadoPartidaValue;
+        //                 // }
+
+        //                 landProps.attributes[LandCls.partida] = land.resolutionType === UtilityCase.tipoResolucionValue ? land.resolutionDocument : null;
+        //                 landProps.attributes[LandCls.estadoPartida] = land.resolutionType === UtilityCase.tipoResolucionValue ? UtilityCase.estadoPartidaValue : null;
+
+        //                 // if (landGraphic.attributes.floor){
+        //                 landProps.attributes[LandCls.piso] = land.floor;
+        //                 landProps.geometry = land.pointLot.geometry;
+        //                 landProps.attributes['ID'] = land.id;
+
+        //                 uiValue = uiValue + 1;
+        //                 lands.push(landProps.clone());
+        //             });
+        //             return deferred.resolve(lands);
+        //         })
+        //         .catch(err => deferred.reject(err));
+        //     return deferred.promise;
+        // },
+
+        executeIndependence: function executeIndependence() {
             var _this2 = this;
 
-            var deferred = new Deferred();
-            var LandCls = new UtilityCase.Land();
-            var LotCls = new UtilityCase.Lot();
-            var lands = [];
-            // let uiValue = UtilityCase.codUiValue
-
-            UtilityCase.getFeatureSchema(this.urlLands).then(function (landSchema) {
-                _this2.newLands.forEach(function (land) {
-                    var landProps = landSchema.clone();
-                    landProps.attributes = UtilityCase.attributeTransfer({
-                        objTarget: landSchema.attributes,
-                        objBase: land.pointLot.attributes,
-                        omitPropsDefault: false
-                    });
-                    landProps.attributes[LandCls.codPre] = land.cpm;
-                    landProps.attributes[LandCls.codUi] = uiValue;
-                    landProps.attributes[LandCls.estado] = UtilityCase.estadoValue;
-                    landProps.attributes[LandCls.coordX] = land.pointLot.geometry.x;
-                    landProps.attributes[LandCls.coordY] = land.pointLot.geometry.y;
-                    landProps.attributes[LotCls.fuente] = _this2.codRequest;
-                    landProps.attributes[LotCls.nomPc] = UtilityCase.platformUpdate;
-                    landProps.attributes[LotCls.nomUser] = _this2.user;
-                    landProps.attributes[LandCls.tipPred] = land.tipPred;
-                    landProps.attributes[LandCls.codVer] = UtilityCase.getValueCodVer(landProps.attributes[LandCls.ranCpu], uiValue);
-                    landProps.attributes[LandCls.codCpu] = UtilityCase.generateCodCpu(landProps.attributes[LandCls.ranCpu], landProps.attributes[LandCls.codVer], codUi = uiValue);
-
-                    landProps.attributes[LandCls.dirMun] = UtilityCase.generateDirMun(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
-                    landProps.attributes[LandCls.dirUrb] = UtilityCase.generateDirUrb(landProps.attributes[LandCls.tipVia], landProps.attributes[LandCls.nomVia], landProps.attributes[LandCls.numMun]);
-                    landProps.attributes[LotCls.anoCart] = new Date().getFullYear();
-                    // if (land.resolutionType === UtilityCase.tipoResolucionValue) {
-                    //     landProps.attributes[LandCls.partida] = land.resolutionDocument
-                    //     landProps.attributes[LandCls.estadoPartida] = UtilityCase.estadoPartidaValue;
-                    // }
-
-                    landProps.attributes[LandCls.partida] = land.resolutionType === UtilityCase.tipoResolucionValue ? land.resolutionDocument : null;
-                    landProps.attributes[LandCls.estadoPartida] = land.resolutionType === UtilityCase.tipoResolucionValue ? UtilityCase.estadoPartidaValue : null;
-
-                    // if (landGraphic.attributes.floor){
-                    landProps.attributes[LandCls.piso] = land.floor;
-                    landProps.geometry = land.pointLot.geometry;
-                    landProps.attributes['ID'] = land.id;
-
-                    uiValue = uiValue + 1;
-                    lands.push(landProps.clone());
-                });
-                return deferred.resolve(lands);
-            }).catch(function (err) {
-                return deferred.reject(err);
-            });
-            return deferred.promise;
-        },
-        executeIndependence: function executeIndependence() {
-            var _this3 = this;
-
-            return UtilityCase.checkResolutionDocument(this.newLands, this.ubigeo, this.urlLands).then(function () {
-                return _this3.getUiOfLot();
-            }).then(function (uiValue) {
-                return UtilityCase.translateFieldsPointLotToLand(_this3.currentPoinLotsRows, _this3.urlLands, _this3.newLands, uiValue);
+            return UtilityCase.checkResolutionDocument(this.ubigeo, this.newLands, this.config.checkResolutionDocument, this.config, ntk)
+            // .then(() => this.getUiOfLot())
+            .then(function () {
+                return UtilityCase.translateFieldsUbicacionToLand(_this2.currentUbicacionRows, _this2.newLands);
             })
             // .then(uiValue => this.calculateLandFields(uiValue))
             .then(function (lands) {
-                return UtilityCase.calculateIdMznC(lands, _this3.cadastralBlockUrl, _this3.ubigeo);
-            }).then(function (lands) {
-                return UtilityCase.calculateIdPred(lands, _this3.urlLands, _this3.ubigeo);
-            }).then(function (lands) {
-                return UtilityCase.updateRowsGeneric(lands, _this3.codRequest, _this3.user, 1);
-            }).then(function (lands) {
-                _this3.lands = lands;
-                return UtilityCase.addDataNew([], [], lands, _this3.config);
-            }).then(function (lands) {
-                return _this3.getMatrixLand();
-            }).then(function (matrixLand) {
-                return _this3.updateMatrixLand(matrixLand);
-            }).then(function (results) {
-                return UtilityCase.updateStatusRequests(_this3.lands, _this3.codRequest, _this3.caseRequest, _this3.ubigeo, _this3.config);
+                return UtilityCase.calculateIdMznC(lands, _this2.cadastralBlockUrl, _this2.ubigeo);
+            })
+            // .then(lands => UtilityCase.calculateIdPred(lands, this.urlLands, this.ubigeo))
+            // .then(lands => UtilityCase.updateRowsGeneric(lands, this.codRequest, this.user, 1))
+            // .then(lands => {
+            //     this.lands = lands;
+            //     return UtilityCase.addDataNew([], [], lands, this.config)
+            // })
+            // .then(lands => this.getMatrixLand())
+            // .then(matrixLand => this.updateMatrixLand(matrixLand))
+            .then(function (results) {
+                return UtilityCase.updateStatusRequests(_this2.lands, _this2.codRequest, _this2.caseRequest, _this2.ubigeo, _this2.config);
             }).then(function (result) {
                 return result;
             }).catch(function (err) {

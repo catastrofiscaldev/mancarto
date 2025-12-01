@@ -143,7 +143,6 @@
         },
         "id": "widgets_AttributeTable_Widget_50",
         "name": "AttributeTable",
-        "config": "configs/AttributeTable/config_widgets_AttributeTable_Widget_50.json",
         "visible": false
       },
       {
@@ -201,7 +200,7 @@
             "left": 0,
             "top": 40,
             "bottom": 0,
-            "width": 430,
+            "width": 450,
             "relativeTo": "browser"
           }
         },
@@ -238,7 +237,7 @@
       "right": 0,
       "bottom": 0
     },
-    "itemId": "d46b71b317874e1f9865c93666a6b56e",
+    "itemId": "a6ee04922e354df39456fba72444b978",
     "mapOptions": {},
     "id": "map",
     "portalUrl": "https://ws.mineco.gob.pe/portaldf",
