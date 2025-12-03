@@ -15,8 +15,13 @@ define(["./UtilityCase"], function (UtilityCase) {
         // currentLotsRows: null, //@param
         currentLandsRows: null,
         currentLotsRows: null,
+        currentUbicacionRows: null, //@param
+        estadoInsValue: null, // @calculate
+        lot: new UtilityCase.Lot(),
 
         executeDeactivate: function executeDeactivate() {
+            var _this = this;
+
             var self = this;
             self.currentLandsRows = [{
                 attributes: {
@@ -39,7 +44,20 @@ define(["./UtilityCase"], function (UtilityCase) {
             //         return UtilityCase.updateDataLotsDeactivate(self.currentLotsRows, self.config)
             //     })
             //     .then(results => 
-            return UtilityCase.updateStatusRequests(self.currentLandsRows, self.codRequest, self.caseRequest, self.ubigeo, self.config).catch(function (err) {
+            return UtilityCase.updateStatusRequests(self.currentLandsRows, self.codRequest, self.caseRequest, self.ubigeo, self.config).then(function (results) {
+                if (!results || !results.success) {
+                    throw new Error('No se pudo inactivar el predio. Por favor, intente nuevamente.');
+                }
+                return UtilityCase.checkLandsWithinLot(self.config, _this.currentUbicacionRows[0].attributes.ID_UBICACION);
+            }).then(function (results) {
+                _this.estadoInsValue = results;
+                // const lot = new UtilityCase.Lot();
+                self.currentLotsRows[0].attributes[_this.lot.estadoIns] = _this.estadoInsValue;
+                return UtilityCase.updateDataLotsDeactivate(self.currentLotsRows, self.config.lotUrl);
+            }).then(function () {
+                self.currentUbicacionRows[0].attributes[_this.lot.estadoIns] = _this.estadoInsValue;
+                return UtilityCase.updateDataLotsDeactivate(self.currentUbicacionRows, self.config.ubicacionUrl);
+            }).catch(function (err) {
                 throw err;
             });
         }

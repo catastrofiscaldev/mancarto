@@ -3018,6 +3018,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           // Deactivate.landUrl = selfCm.layersMap.getLayerInfoById(idLyrCfPredios).getUrl();
           Deactivate.cpu = selfCm.uniqueCodeLands;
           Deactivate.currentLotsRows = selfCm.currentLotsRows;
+          Deactivate.currentUbicacionRows = selfCm.currentUbicacionRows;
 
           Deactivate.executeDeactivate().then(function (response) {
             // selfCm.map.getLayer(idLyrCatastroFiscal).setVisibility(false)

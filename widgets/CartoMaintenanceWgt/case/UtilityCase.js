@@ -1217,9 +1217,9 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             });
             return deferred.promise;
         },
-        updateDataLotsDeactivate: function updateDataLotsDeactivate(lots, config) {
+        updateDataLotsDeactivate: function updateDataLotsDeactivate(data, url) {
             var deferred = new Deferred();
-            var updateLotFeature = this.setParametersToUpdateFeatures(config.lotUrl, lots);
+            var updateLotFeature = this.setParametersToUpdateFeatures(url, data);
 
             esriRequest(updateLotFeature, { usePost: true }).then(function (result) {
                 return deferred.resolve(result);
@@ -1427,21 +1427,31 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
 
             return true;
         },
-        checkLandsWithinLot: function checkLandsWithinLot(lot, urlLands) {
+        checkLandsWithinLot: function checkLandsWithinLot(config, idUbicacion) {
             var deferred = new Deferred();
-            var landCls = new this.Land();
-            var queryLands = new Query();
-            queryLands.geometry = lot.geometry;
-            queryLands.distance = 0.5;
-            queryLands.units = "meters";
-            queryLands.where = landCls.estado + " = 1 ";
-            var queryTaskLands = new QueryTask(urlLands);
-            queryTaskLands.execute(queryLands).then(function (response) {
-                var result = response.features.length > 0 ? 1 : 0;
+            var urlLandsByUbicacion = config.landsbyIdLocationUrl + "/?id_ubicacion=" + idUbicacion + "&status=1";
+            this.resolver(urlLandsByUbicacion, config.ntk).then(function (response) {
+                return response.json();
+            }).then(function (data) {
+                var result = data.count > 0 ? 1 : 0;
                 return deferred.resolve(result);
             }).catch(function (err) {
                 return deferred.reject(err);
             });
+
+            // const landCls = new this.Land();
+            // const queryLands = new Query();
+            // queryLands.geometry = lot.geometry;
+            // queryLands.distance = 0.5;
+            // queryLands.units = "meters";
+            // queryLands.where = `${landCls.estado} = 1 `;
+            // const queryTaskLands = new QueryTask(urlLands);
+            // queryTaskLands.execute(queryLands)
+            //     .then(response => {
+            //         const result = response.features.length > 0 ? 1 : 0;
+            //         return deferred.resolve(result);
+            //     })
+            //     .catch(err => deferred.reject(err));
             return deferred.promise;
         },
         buildHeaderNtk: function buildHeaderNtk(ntk) {
