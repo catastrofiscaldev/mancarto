@@ -16,13 +16,13 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
         ubigeoFieldName: 'UBIGEO',
         platformUpdate: 'PCF',
         estadoInsValue: 1,
-        // estadoValue: 1,
-        // codUiValue: 1,
         estadoPartidaValue: 0,
         tipoResolucionValue: "1",
         enCartografiaValue: 1,
         tipDireccionValue: 1,
-        // ntk: null,
+        codTipoPredioValue: 1, // por defecto es 1 urbano
+        enTransicionValue: 0, // por defecto es 0 ya que 1 solo aplica a rurales
+        origenValue: 'mantenimiento_pre', // por defecto es mantenimiento_pre
 
         Land: function Land() {
             this.ubigeo = 'UBIGEO';
@@ -57,6 +57,10 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             this.numInterior = 'NUM_INTERIOR';
             this.tipEdificacion = 'TIP_EDIFICACION';
             this.tipInterior = 'TIP_INTERIOR';
+            this.codTipoPredio = 'COD_TIPO_PREDIO'; // por defecto es 1 urbano
+            this.enTransicion = 'EN_TRANSICION'; // por defecto es 0 ya que 1 solo aplica a rurales
+            this.origen = 'ORIGEN'; // por defecto es mantenimiento_pre
+            // this.tipoDireccion = 'TIPO_DIRECCION';
         },
         Ubicacion: function Ubicacion() {
             this.ubigeo = 'UBIGEO';
@@ -101,7 +105,9 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             // "COD_UI",
             // "COD_VER",
             // "ID_LOTE_P",
-            "ID", "NUM_EDIFICACION", "NUM_INTERIOR", "TIP_EDIFICACION", "TIP_INTERIOR", "SUB_LOTE", "ID_ARANC", "VAL_ACT", "ID_MZN_C", "TIPO_DOCUMENTO", "NUMERO_DOCUMENTO", 'id_ubicacion_puerta', 'longitude_puerta', 'latitude_puerta', 'lote_urbano_puerta', 'manzana_urbana_puerta', 'ID_LOTE_P'];
+            "ID", "NUM_EDIFICACION", "NUM_INTERIOR", "TIP_EDIFICACION", "TIP_INTERIOR", "SUB_LOTE", "ID_ARANC", "VAL_ACT", "ID_MZN_C", "TIPO_DOCUMENTO", "NUMERO_DOCUMENTO", 'id_ubicacion_puerta', 'longitude_puerta', 'latitude_puerta', 'lote_urbano_puerta', 'manzana_urbana_puerta', 'ID_LOTE_P',
+            // nuevos campos
+            'COD_TIPO_PREDIO', 'EN_CARTOGRAFIA', 'EN_TRANSICION', 'KM', 'NUM_ALT', 'NUM_MUN', 'ORIGEN', 'PISO', 'TIP_DIRECCION'];
         },
         matchWithReceptionModel: function matchWithReceptionModel(object) {
             var modelRequests = this.receptionModelRequest();
@@ -219,7 +225,12 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                     // "CRCL": null,
                     "SUB_LOTE": null,
                     "PISO": null,
-                    "COD_VIA": null
+                    "COD_VIA": null,
+                    'COD_TIPO_PREDIO': null,
+                    'EN_CARTOGRAFIA': null,
+                    'EN_TRANSICION': null,
+                    'ORIGEN': null,
+                    'TIP_DIRECCION': null
                 }
             };
             return response;
@@ -886,6 +897,7 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                         landProps.attributes[LandCls.tipInterior] = attributes.indoorType;
                         landProps.attributes[LandCls.numEdificacion] = attributes.edificationNumber;
                         landProps.attributes[LandCls.numInterior] = attributes.indoorNumber;
+                        landProps.attributes[LandCls.numMun] = attributes.municipalNumber;
                         // landProps.attributes[LandCls.codUi] = codUiValue || this.codUiValue;
                         // landProps.attributes[LandCls.estado] = this.estadoValue;
                         landProps.attributes[LandCls.coordX] = landGraphic.geometry.x;
@@ -913,6 +925,11 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
                         landProps.attributes[LandCls.piso] = attributes.floor;
                         // }
                         landProps.attributes['ID'] = parseInt(attributes.id.split('_')[1]);
+
+                        landProps.attributes[LandCls.codTipoPredio] = _this7.codTipoPredioValue;
+                        // landProps.attributes[LandCls.enCartografia] = this.enCartografiaValue;
+                        landProps.attributes[LandCls.enTransicion] = _this7.enTransicionValue;
+                        landProps.attributes[LandCls.origen] = _this7.origenValue;
 
                         if (attributes.tipLot === 2) {
                             var rightOfWay = attributes.mediterraneanCoords;

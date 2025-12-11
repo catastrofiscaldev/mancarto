@@ -252,6 +252,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
     edificationNumber: null,
     edificationType: null,
     urbanSublotNumber: null,
+    municipalNumber: null,
+    km: null,
 
     statusDrawingRightOfWay: false,
     extentBlock: null,
@@ -1424,7 +1426,9 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
             indoorNumber: _this4.indoorNumber,
             indoorType: _this4.indoorType,
             edificationNumber: _this4.edificationNumber,
-            edificationType: _this4.edificationType
+            edificationType: _this4.edificationType,
+            municipalNumber: _this4.municipalNumber,
+            km: _this4.km
           };
           graphicLayerPredioByMaintenance.add(graphicDrawLand);
           if (_this4.currentRightOfWayDraw) {
@@ -1449,7 +1453,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
           if (stateWidget.length > 0) {
             stateWidget[0].click();
           }
-          // this._zoomExtentToLote();
+          _this4._zoomExtentToLote();
         }).catch(function (error) {
           _this4.busyIndicator.hide();
           _this4._showMessage(error.message, type = "error");
@@ -1983,7 +1987,7 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm.responseRequests.forEach(function (predio, idx) {
         var tr = dojo.create('tr');
         tr.id = 'predio_' + predio['id'];
-        var row = '<td class="center-aligned">' + (idx + 1) + '</td>\n                  <td>' + predio['address'] + '</td>\n                  <td class="center-aligned">\n                   <span \n                    id="' + tr.id + '_draw"\n                    data-cpm="' + predio['cpm'] + '" \n                    data-resolutionType="' + predio['resolutionType'] + '"\n                    data-resolutionDocument="' + predio['resolutionDocument'] + '"\n                    data-floor="' + predio['floor'] + '"\n                    data-urbanLotNumber="' + (predio['urbanLotNumber'] || null) + '"\n                    data-urbanSublotNumber="' + (predio['urbanSublotNumber'] || null) + '"\n                    data-edificationType="' + (predio['edificationType'] || null) + '"\n                    data-edificationNumber="' + (predio['edificationNumber'] || null) + '"\n                    data-indoorType="' + (predio['indoorType'] || null) + '"\n                    data-indoorNumber="' + (predio['indoorNumber'] || null) + '"\n                   >\n                      <i class="fas fa-map-marker-alt"></i>\n                   </span>\n                  </td>';
+        var row = '<td class="center-aligned">' + (idx + 1) + '</td>\n                  <td>' + predio['address'] + '</td>\n                  <td class="center-aligned">\n                   <span \n                    id="' + tr.id + '_draw"\n                    data-cpm="' + predio['cpm'] + '" \n                    data-resolutionType="' + predio['resolutionType'] + '"\n                    data-resolutionDocument="' + predio['resolutionDocument'] + '"\n                    data-floor="' + predio['floor'] + '"\n                    data-urbanLotNumber="' + (predio['urbanLotNumber'] || null) + '"\n                    data-urbanSublotNumber="' + (predio['urbanSublotNumber'] || null) + '"\n                    data-edificationType="' + (predio['edificationType'] || null) + '"\n                    data-edificationNumber="' + (predio['edificationNumber'] || null) + '"\n                    data-indoorType="' + (predio['indoorType'] || null) + '"\n                    data-indoorNumber="' + (predio['indoorNumber'] || null) + '"\n                    data-municipalNumber="' + (predio['municipalNumber'] || null) + '"\n                    data-km="' + (predio['km'] || null) + '"\n                   >\n                      <i class="fas fa-map-marker-alt"></i>\n                   </span>\n                  </td>';
         tr.innerHTML = row;
         tr.style.cursor = "pointer";
         bodyTable.appendChild(tr);
@@ -2029,6 +2033,8 @@ define(['dojo/_base/declare', 'jimu/BaseWidget', 'dijit/_WidgetsInTemplateMixin'
       selfCm.edificationNumber = evt.currentTarget.dataset.edificationnumber === 'null' ? null : evt.currentTarget.dataset.edificationnumber;
       selfCm.indoorType = evt.currentTarget.dataset.indoortype === 'null' ? null : evt.currentTarget.dataset.indoortype;
       selfCm.indoorNumber = evt.currentTarget.dataset.indoornumber === 'null' ? null : evt.currentTarget.dataset.indoornumber;
+      selfCm.municipalNumber = evt.currentTarget.dataset.municipalnumber === 'null' ? null : evt.currentTarget.dataset.municipalnumber;
+      selfCm.km = evt.currentTarget.dataset.km === 'null' ? null : evt.currentTarget.dataset.km;
 
       // graphics initialize
       var graphic = graphicLayerPredioByMaintenance.graphics.filter(function (item) {
