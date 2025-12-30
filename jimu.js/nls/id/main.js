@@ -483,7 +483,7 @@ define({
     "unknowError": "unable to complete operations",
     "invalidType": "Tipe file tidak valid.",
     "cropImage": "Potong gambar",
-    "exceed": "Ukuran file tidak boleh lebih dari 1024 KB",
+    "exceed": "Ukuran file tidak boleh melebihi ${size} KB",
     "enableFlash": "Harap aktifkan Adobe Flash sebelum menelusuri gambar.",
     "cropWaining": "Pilihlah foto yang setidaknya ${width} x ${height} piksel.",
     "toolTip": "Untuk hasil terbaik, gambar tersebut harus memiliki ${width} piksel lebar dikali ${height} piksel tinggi. Ukuran lain akan disesuaikan agar cocok. Format gambar yang diterima: PNG, GIF, dan JPEG."

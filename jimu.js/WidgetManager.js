@@ -590,7 +590,7 @@ function(declare, lang, array, html, Deferred, topic, Evented, on, Tooltip, aspe
         return;//Prevent repeated opening of the same widget.#14994
       }
 
-      if (!widget._isTestSizeFlag && utils.isAutoFocusFirstNodeWidget(widget)) {//Special case for _isTestSizeFlag: timeSlider, swipe
+      if (!widget._isTestSizeFlag && this.appConfig.theme.name !== 'DartTheme' && utils.isAutoFocusFirstNodeWidget(widget)) {//Special case for _isTestSizeFlag: timeSlider, swipe
         utils.focusFirstFocusNode(widget.domNode);
       }
 

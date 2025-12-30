@@ -483,7 +483,7 @@ define({
     "unknowError": "nepavyko įvykdyti operacijų",
     "invalidType": "Neleistinas failo tipas.",
     "cropImage": "Apkarpyti atvaizdą",
-    "exceed": "Failo dydis negali viršyti 1024 KB",
+    "exceed": "Failo dydis negali viršyti ${size} KB",
     "enableFlash": "Prieš naršydami vaizdą įjunkite Adobe Flash.",
     "cropWaining": "Pasirinkite bent ${width} x ${height} pikselių dydžio nuotrauką.",
     "toolTip": "Geriausiam rezultatui naudokite paveikslėlį, kuris būtų ${width} piks. pločio ${height} piks. ilgio. Kitų išmatavimų paveikslėliai talpinimo metu bus automatiškai pakoreguoti. Tinkami paveikslėlių formatai: PNG, GIF ir JPEG."

@@ -483,7 +483,7 @@ define({
     "unknowError": "toimintoja ei voi suorittaa loppuun",
     "invalidType": "Virheellinen tiedostotyyppi.",
     "cropImage": "Rajaa kuva",
-    "exceed": "Tiedoston koko ei saa ylittää 1024 kt",
+    "exceed": "Tiedoston koko ei saa ylittää ${size} kilotavua",
     "enableFlash": "Ota käyttöön Adobe Flash ennen kuvaan selaamista.",
     "cropWaining": "Valitse valokuva, joka on kooltaan vähintään ${width} x ${height} pikseliä.",
     "toolTip": "Parhaan tuloksen saamiseksi kuvan tulisi olla leveydeltään ${width} pikseliä ja korkeudeltaan ${height} pikseliä. Muut koot säädetään sopivaksi. Hyväksyttyjä kuvamuotoja ovat PNG, GIF ja JPEG."

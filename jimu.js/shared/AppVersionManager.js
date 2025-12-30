@@ -1488,6 +1488,46 @@ function(BaseVersionManager, utils) {
       },
 
       compatible: true
+    }, {
+      version: '2.27',
+
+      description: 'The version for Online 2023.R01',
+
+      upgrader: function(oldConfig){
+        return oldConfig;
+      },
+
+      compatible: true
+    }, {
+      version: '2.28',
+
+      description: 'The version for Online 2023.R02',
+
+      upgrader: function(oldConfig){
+        return oldConfig;
+      },
+
+      compatible: true
+    }, {
+      version: '2.29',
+
+      description: 'The version for Online 2023.R03',
+
+      upgrader: function(oldConfig){
+        return oldConfig;
+      },
+
+      compatible: true
+    }, {
+      version: '2.30',
+
+      description: 'The version for Online 2024.R01',
+
+      upgrader: function(oldConfig){
+        return oldConfig;
+      },
+
+      compatible: true
     }];
 
     this.isCompatible = function(_oldVersion, _newVersion){

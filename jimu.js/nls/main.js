@@ -485,7 +485,7 @@ define({
       unknowError: "unable to complete operations",
       invalidType: "Invalid file type.",
       cropImage: "Crop Image",
-      exceed: "File size cannot exceed 1024 KB",
+      exceed: "File size cannot exceed ${size} KB",
       enableFlash: "Please enable Adobe Flash before browsing to an image.",
       cropWaining: "Please choose a photo that's at least ${width} x ${height} pixels.",
       toolTip: "For the best result, the image should be ${width} pixels wide by ${height} pixels high. Other sizes will be adjusted to fit. Acceptable image formats are: PNG, GIF and JPEG."

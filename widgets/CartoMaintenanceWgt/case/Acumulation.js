@@ -42,15 +42,19 @@ define(["./UtilityCase"], function (UtilityCase) {
         executeAcumulation: function executeAcumulation() {
             var _this = this;
 
-            return UtilityCase.getBlockFromLot(this.lotGraphic[0].geometry, this.blockUrl).then(function (block) {
-                return UtilityCase.checkExistLotUrban(_this.attributes, block, _this.lotUrl, _this.currentLotsRows, _this.ubigeo);
+            return UtilityCase.checkResolutionDocument(this.newLandsGraphics, this.ubigeo, this.landUrl).then(function () {
+                return UtilityCase.getBlockFromLot(_this.lotGraphic[0].geometry, _this.blockUrl);
             }).then(function (block) {
-                return UtilityCase.checkExistLotUrbanIntoLotsOriginal(_this.attributes, _this.currentLotsRows, block);
+                return UtilityCase.checkExistLotUrban(_this.attributes, block, _this.lotUrl, _this.currentLotsRows, _this.ubigeo, checkSublotUrban = true);
+            }).then(function (block) {
+                return UtilityCase.checkExistLotUrbanIntoLotsOriginal(_this.attributes, _this.currentLotsRows, block, checkSublotUrban = true);
             }).then(function (block) {
                 return UtilityCase.translateFieldsBlockToLot(_this.lotUrl, block, _this.lotGraphic);
             }).then(function (lots) {
-                var tipLot = UtilityCase.calculateTipLot(_this.currentLotsRows);
-                return UtilityCase.calculateFieldsOfLot(_this.lotUrl, lots, _this.ubigeo, _this.codRequest, _this.user, _this.attributes, tipLot);
+                // const tipLot = UtilityCase.calculateTipLot(this.currentLotsRows);
+                return UtilityCase.calculateFieldsOfLot(_this.lotUrl, lots, _this.ubigeo, _this.codRequests, _this.user, _this.attributes
+                // tipLot
+                );
             }).then(function (lots) {
                 _this.lots = lots;
                 return UtilityCase.translateFieldsLotToPointLot(lots, _this.pointLotUrl, _this.newPointLotsGraphics);

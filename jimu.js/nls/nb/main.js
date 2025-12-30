@@ -483,7 +483,7 @@ define({
     "unknowError": "kan ikke fullføre operasjonene",
     "invalidType": "Ugyldig filtype.",
     "cropImage": "Beskjær bilde",
-    "exceed": "Filstørrelsen må ikke overskride 1 024 kB",
+    "exceed": "Filstørrelsen må ikke overskride ${size} kB",
     "enableFlash": "Aktiver Adobe Flash før du blar til et bilde.",
     "cropWaining": "Velg et bilde som er minst ${width} x ${height} piksler.",
     "toolTip": "Resultatet blir best hvis bildet er ${width} piksler bredt og ${height} piksler høyt. Andre størrelser må justeres for at de skal passe. Godkjente bildeformater er: PNG, GIF og JPEG."

@@ -340,7 +340,7 @@ define({
     "dateOperatorMonths": "månader",
     "dateOperatorYears": "år",
     "dateOperatorInTheLast": "i den sista",
-    "dateOperatorNotInTheLast": "inte i den sista",
+    "dateOperatorNotInTheLast": "inte inom de senaste",
     "dateOperatorIsBetween": "är mellan",
     "dateOperatorIsNotBetween": "är inte mellan",
     "dateOperatorIsBlank": "är tomt",
@@ -483,7 +483,7 @@ define({
     "unknowError": "det gick inte att slutföra åtgärderna",
     "invalidType": "Ogiltig filtyp.",
     "cropImage": "Beskär bild",
-    "exceed": "Filstorleken får inte överskrida 1 024 KB",
+    "exceed": "Filstorleken får inte överskrida ${size} kB",
     "enableFlash": "Aktivera Adobe Flash innan du bläddrar till en bild.",
     "cropWaining": "Välj ett foto som är på minst ${width} x ${height} pixlar.",
     "toolTip": "För bästa resultat ska bilden vara ${width} bildpunkter bred och ${height} bildpunkter hög. Andra storlekar justeras för att passa in. Tillåtna bildformat är: PNG, GIF och JPEG."

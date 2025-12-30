@@ -13,6 +13,7 @@
   position: relative;
 }
 .jimu-ldockable-panel>.bar{
+  display:none !important;
   background-position: center center;
   background-repeat: no-repeat;
   cursor: pointer;

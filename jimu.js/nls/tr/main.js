@@ -483,7 +483,7 @@ define({
     "unknowError": "işlemler tamamlanamıyor",
     "invalidType": "Geçersiz dosya türü.",
     "cropImage": "Görüntüyü Kırp",
-    "exceed": "Dosya boyutu 1024 KB'yi aşamaz",
+    "exceed": "Dosya boyutu ${size} KB'yi aşamaz",
     "enableFlash": "Bir resme gitmeden önce Adobe Flash uygulamasını etkinleştirin.",
     "cropWaining": "Çözünürlüğü en az ${width} x ${height} piksel olan bir fotoğraf seçin.",
     "toolTip": "En iyi sonuç için görüntü ${width} piksel genişliğinde ve ${height} piksel yüksekliğinde olmalıdır. Diğer boyutlar sığacak şekilde ayarlanır. Kabul edilen görüntü biçimleri: PNG, GIF ve JPEG."

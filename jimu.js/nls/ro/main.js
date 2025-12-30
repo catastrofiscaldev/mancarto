@@ -483,7 +483,7 @@ define({
     "unknowError": "imposibil de finalizat operaţiunile",
     "invalidType": "Tip de fişier nevalid.",
     "cropImage": "Decupare imagine",
-    "exceed": "Dimensiunea fişierului nu poate depăşi 1024 KB",
+    "exceed": "Dimensiunea fișierului nu poate depăși ${size} KB",
     "enableFlash": "Activaţi Adobe Flash înainte de a naviga la o imagine.",
     "cropWaining": "Alegeți o fotografie care are cel puțin ${width} x ${height} pixeli.",
     "toolTip": "Pentru cel mai bun rezultat, imaginea trebuie să aibă ${width} pixeli lăţime şi ${height} pixeli înălţime. Alte dimensiuni vor fi ajustate pentru a se încadra. Formatele de imagine acceptate sunt: PNG, GIF şi JPEG."

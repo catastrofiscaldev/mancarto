@@ -93,8 +93,7 @@ var ie = (function() {
       window.apiUrl + 'dijit/themes/claro/claro.css',
       window.apiUrl + 'esri/css/esri.css',
       // window.apiUrl + 'dojox/layout/resources/ResizeHandle.css',
-      window.path + 'jimu.js/css/jimu-theme.css',
-      // 'https://use.fontawesome.com/releases/v5.3.1/js/all.js',
+      window.path + 'jimu.js/css/jimu-theme.css'
       //window.path + 'libs/caja-html-sanitizer-minified.js'
       //window.path + 'libs/moment/twix.js',
       //window.path + 'libs/Sortable.js',
@@ -179,14 +178,6 @@ var ie = (function() {
         name: "configs",
         location: window.path + "configs"
       }];
-
-      dojoConfig.aliases = [
-        // ['turf', 'https://unpkg.com/@turf/turf@6/turf.min.js'],
-        // ['xlsx', 'https://unpkg.com/xlsx@0.17.2/dist/xlsx.full.min.js']
-        // ['regression', window.path + 'libs/regression/regression.min.js'],
-        // ['dd3', 'https://d3js.org/d3.v4.min.js'],
-        // ['html2canvas', 'libs/html2canvas/html2canvas.min.js']
-      ]
 
       resources.push(window.apiUrl + 'init.js');
     }

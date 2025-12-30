@@ -56,7 +56,7 @@ define({
     // "La solicitud no se puede realizar porque no se graficaron los predios resultantes"
     emptyGraphicLandSubdivision: "La solicitud no se puede realizar porque no se graficaron los predios resultantes",
     // "La solicitud no se puede realizar porque uno de los lotes no tiene un predio resultante"
-    emptyLandResultSubdivision: "La solicitud no se puede realizar porque uno de los lotes no tiene un predio resultante",
+    emptyLandResultSubdivision: "La solicitud no se puede realizar porque uno de los lotes no tiene un predio resultante o servidumbre de paso",
     // 'No se ha dibujado ninguna linea de division'
     emptyLineSubdivision: "No se ha dibujado ninguna linea de division",
     resultDeactivate: "Esta operación ha sido completada con éxito. El predio seleccionado está inactivo, por lo que su visualización no está disponible.",

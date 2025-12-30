@@ -238,7 +238,7 @@ define([
     if (!search.enabled) {
       return false;
     }
-    if (search.layers.length === 0) {
+    if (!search.layers || search.layers.length === 0) {
       return false;
     }
 

@@ -4891,5 +4891,18 @@ function(lang, array, html, has, config, ioQuery, query, nlt, Deferred, all, on,
       html.setAttr(nodes.logo, 'alt', appConfig.logoAlt);
     }
   };
+
+  // Defense xss attack for ,#20042
+  mo.dynamicLinkXssFilter = function(url) {
+    var lowercaseUrl = url.toLowerCase().trim();
+
+    var XSS_PREFIX = "javascript:"
+    if (lowercaseUrl.startsWith(XSS_PREFIX)) {
+      return url.substring(XSS_PREFIX.length);
+    }
+
+    return url;
+  };
+
   return mo;
 });

@@ -440,7 +440,7 @@ function (declare, lang, array, html, dojoConfig, cookie,
       if(err && err.message){
         html.create('div', {
           'class': 'app-error',
-          innerHTML: jimuUtils.sanitizeHTML(err.message)
+          innerHTML: jimuUtils.stripHTML(err.message)
         }, document.body);
         /*globals jimuConfig*/
         html.setStyle(jimuConfig.loadingId, 'display', 'none');

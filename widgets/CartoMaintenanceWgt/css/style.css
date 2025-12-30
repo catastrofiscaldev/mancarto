@@ -404,6 +404,23 @@ p {
   margin-bottom: 10px;
 }
 
+.bodyPredInfoClsCm textarea {
+  padding: 5px;
+  width: 100%;
+  border: 1px solid #D2D2D2;
+  border-radius: 5px;
+  outline: none;
+  background: #ECECEC;
+  margin-bottom: 10px;
+  font-family: inherit;
+  font-size: inherit;
+  resize: none;
+  overflow: hidden;
+  min-height: 32px;
+  box-sizing: border-box;
+  line-height: 1.5;
+}
+
 /* .toggleClsCm{
   width: 50%;
   text-align: right;
@@ -526,7 +543,19 @@ p {
   align-self: end;
 }
 
-.btnSendClsCm:hover {
+.btnCancelClsCm {
+  width: 100%;
+  border: none;
+  border-radius: 5px;
+  background-color: #c14242;
+  color: white;
+  height: 30px;
+  margin-top: 10px;
+  align-self: end;
+}
+
+.btnSendClsCm:hover,
+.btnCancelClsCm:hover {
   cursor: pointer;
 }
 
@@ -822,7 +851,7 @@ input[type='file'] {
 }
 
 
-.containerToolDrawClsCm {
+.containerToolClsCm {
   display: none;
   position: fixed;
   z-index: 2;
@@ -838,7 +867,8 @@ input[type='file'] {
   box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.2);
 }
 
-.containerToolDrawClsCm.active {
+.containerToolDrawClsCm.active,
+.containerHelpRightOfWayClsCm.active {
   display: block;
 }
 

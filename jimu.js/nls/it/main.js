@@ -483,7 +483,7 @@ define({
     "unknowError": "impossibile completare le operazioni",
     "invalidType": "Tipo di file non valido.",
     "cropImage": "Ritaglia immagine",
-    "exceed": "Le dimensioni del file non possono superare 1024 KB",
+    "exceed": "La dimensione del file non può superare ${size} KB",
     "enableFlash": "Abilitare Adobe Flash prima di passare a un'immagine.",
     "cropWaining": "Scegliere una foto di almeno ${width} x ${height} pixel.",
     "toolTip": "Per ottimizzare i risultati, l'immagine deve avere una larghezza pari a ${width} pixel e un'altezza pari a ${height} pixel. Dimensioni diverse verranno adattate. I formati di immagine supportati sono PNG, GIF e JPEG."

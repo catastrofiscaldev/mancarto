@@ -1187,7 +1187,7 @@ define([
                   "styleUrl": "https://cdn.arcgis.com/sharing/rest/content/items/7dc6cea0b1764a1f9af2e679f642f0f5/resources/styles/root.json"
                 }
               ],
-              "id": "18411ea05c5-basemap-2",
+              "id": "18d530174cf-basemap-2",
               "title": "Topographic",
               "elevationLayers": [
                 {
@@ -1218,19 +1218,21 @@ define([
               "heightModel": "gravity_related_height",
               "heightUnit": "meter"
             },
-            "version": "1.29",
+            "version": "1.33",
+            "authoringApp": "WebAppBuilder",
+            "authoringAppVersion": "2.30",
             "initialState": {
               "environment": {
                 "lighting": {
                   "type": "sun",
-                  "datetime": 1647343627000,
+                  "datetime": 1710502027000,
                   "displayUTCOffset": 1
                 },
                 "atmosphereEnabled": true,
                 "starsEnabled": true,
                 "weather": {
                   "type": "sunny",
-                  "cloudCover": 0.5
+                  "cloudCover": 0
                 }
               },
               "viewpoint": {
@@ -1240,12 +1242,12 @@ define([
                       "latestWkid": 3857,
                       "wkid": 102100
                     },
-                    "x": 915287.4999997217,
-                    "y": 5857832.062839295,
-                    "z": 13939488.740801457
+                    "x": 915287.4999996595,
+                    "y": 5857842.796108316,
+                    "z": 13930898.139164943
                   },
                   "heading": 0,
-                  "tilt": 0.1569588913889209
+                  "tilt": 0.15702528423945328
                 }
               }
             },
@@ -1253,9 +1255,7 @@ define([
               "latestWkid": 3857,
               "wkid": 102100
             },
-            "viewingMode": "global",
-            "authoringApp": "WebAppBuilder",
-            "authoringAppVersion": "2.26"
+            "viewingMode": "global"
           };
           var text = dojoJson.stringify(data);
           var args = {

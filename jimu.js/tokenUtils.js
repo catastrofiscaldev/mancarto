@@ -450,7 +450,7 @@ function(lang, array, aspect, Deferred, cookie, json, topic, dojoScript, esriNS,
           portalUrl: portalUrl,
           authNamespace: '/',
           popup: true,
-          flowType: Number(portalVersion) >= 8.4 ? 'authorization-code' : 'auto',
+          flowType: 'auto',
           popupCallbackUrl: oauthReturnUrl
         });
         esriNS.id.registerOAuthInfos([oAuthInfo]);

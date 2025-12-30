@@ -483,7 +483,7 @@ define({
     "unknowError": "Vorgänge können nicht abgeschlossen werden.",
     "invalidType": "Ungültiger Dateityp.",
     "cropImage": "Bild zuschneiden",
-    "exceed": "Dateigröße darf 1024 KB nicht überschreiten",
+    "exceed": "Dateigröße darf ${size} KB nicht überschreiten.",
     "enableFlash": "Aktivieren Sie Adobe Flash, bevor Sie nach einem Bild suchen.",
     "cropWaining": "Wählen Sie ein Foto mit einem Format von mindestens ${width} x ${height} Pixel aus.",
     "toolTip": "Optimale Ergebnisse erzielen Sie mit einer Bildgröße von ${width} x ${height} Pixel (Breite x Höhe). Andere Größen werden angepasst. Zulässige Bildformate sind: PNG, GIF und JPEG."
