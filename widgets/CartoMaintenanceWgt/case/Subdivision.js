@@ -2,20 +2,19 @@ define(["./UtilityCase"], function (UtilityCase) {
     /*
     * @description: Objeto que contiene las funciones para la subdivisión de lotes
     */
-    var idLotesOriginales = [];
     var SubDivision = {
         codRequests: null, // @params: Código de la solicitud
         // currentLots: null, // @param: Lotes actuales a modificar
         currentLotsRows: null, // @calculate []: Features de los lotes actuales
-        currentUbicacionRows: null, // @calculate: Features de los puntos de los lotes actuales
+        currentPoinLotsRows: null, // @calculate: Features de los puntos de los lotes actuales
         currentLandsRows: null, // @calculate: Features de los predios actuales
         landsRegisterByRequests: null, // @param: Predios registrados por solicitud
-        // newubicaciones: null, // @param: nuevos puntos lote
-        newUbicacionGraphics: null, // @params: nuevos puntos lote como graficos
+        // newPointLots: null, // @param: nuevos puntos lote
+        newPointLotsGraphics: null, // @params: nuevos puntos lote como graficos
         newLandsGraphics: null, // @params: nuevos predios como graficos
         attributes: null, // @param: 
-        ubicacionUrl: null, // @param
-        // landUrl: null, // @param
+        pointLotUrl: null, // @param
+        landUrl: null, // @param
         lotUrl: null, // @param
         arancelUrl: null, // @param
         blockUrl: null, // @param
@@ -27,7 +26,7 @@ define(["./UtilityCase"], function (UtilityCase) {
         config: null, // @param
 
         lands: null, // @calculate
-        ubicaciones: [], // @calculate array
+        pointLots: [], // @calculate array
         lots: null, // @calculate
         // block: null, // @calculate
         // LandCls: new UtilityCase.Land(),
@@ -36,12 +35,11 @@ define(["./UtilityCase"], function (UtilityCase) {
         caseRequest: null, // @param
         queryBlock: null, // @param
         queryLots: null, // @param
-        domains: null, // @param
 
         executeSubdivision: function executeSubdivision() {
             var _this = this;
 
-            return UtilityCase.checkResolutionDocument(this.ubigeo, this.newLandsGraphics, this.config.checkResolutionDocument, this.config.ntk, exceptLands = this.landsRegisterByRequests).then(function () {
+            return UtilityCase.checkResolutionDocument(this.newLandsGraphics, this.ubigeo, this.landUrl, checkOnlyOutsideTheLot = true, currentLands = this.landsRegisterByRequests).then(function () {
                 return UtilityCase.getBlockFromLot(_this.currentLotsRows[0].geometry, _this.blockUrl);
             }).then(function (block) {
                 return UtilityCase.checkExistLotUrban(_this.attributes, block, _this.lotUrl, _this.currentLotsRows, _this.ubigeo, checkSublotUrban = true);
@@ -56,36 +54,34 @@ define(["./UtilityCase"], function (UtilityCase) {
                 );
             }).then(function (lots) {
                 _this.lots = lots;
-                idLotesOriginales = _this.currentLotsRows.map(function (i) {
-                    return i.attributes.ID_LOTE_P;
-                });
-                return UtilityCase.translateFieldsLotToUbicacion(lots, _this.ubicacionUrl, _this.newUbicacionGraphics);
-            }).then(function (ubicaciones) {
-                return UtilityCase.translateFieldsArancelToUbicacion(ubicaciones, _this.arancelUrl);
-            }).then(function (ubicaciones) {
-                return UtilityCase.calculateFieldsOfUbicacion(_this.ubicacionUrl, _this.ubigeo, ubicaciones);
-            }).then(function (ubicaciones) {
-                _this.ubicaciones = ubicaciones;
-                return UtilityCase.translateFieldsUbicacionToLand(ubicaciones, _this.newLandsGraphics, _this.domains);
+                return UtilityCase.translateFieldsLotToPointLot(lots, _this.pointLotUrl, _this.newPointLotsGraphics);
+            }).then(function (pointLots) {
+                return UtilityCase.translateFieldsArancelToPointLot(pointLots, _this.arancelUrl);
+            }).then(function (pointLots) {
+                return UtilityCase.calculateFieldsOfPointLot(_this.pointLotUrl, _this.ubigeo, pointLots);
+            }).then(function (pointLots) {
+                _this.pointLots = pointLots;
+                return UtilityCase.translateFieldsPointLotToLand(pointLots, _this.landUrl, _this.newLandsGraphics);
             }).then(function (lands) {
                 return UtilityCase.calculateIdMznC(lands, _this.cadastralBlockUrl, _this.ubigeo);
-            })
-            // .then(lands => UtilityCase.calculateIdPred(lands, this.landUrl, this.ubigeo))
-            .then(function (lands) {
+            }).then(function (lands) {
+                return UtilityCase.calculateIdPred(lands, _this.landUrl, _this.ubigeo);
+            }).then(function (lands) {
                 _this.lands = lands;
-                return UtilityCase.getDataOrigin(_this.ubicacionUrl, _this.currentLotsRows[0], _this.queryLots);
+                return UtilityCase.getDataOrigin(_this.pointLotUrl, _this.landUrl, _this.currentLotsRows[0], _this.queryLots);
             }).then(function (results) {
-                _this.currentUbicacionRows = results[0].features;
-                // idLotesOriginales = this.currentLotsRows.map(i => i.attributes.ID_LOTE_P);
-                // this.currentLandsRows = results[1].features;
-                // this.idLandInactive = results[1].features.map(i => i.attributes.COD_CPU)
-                return UtilityCase.sendDataOriginToHistoric(_this.config, _this.currentLotsRows, _this.currentUbicacionRows);
+                _this.currentPoinLotsRows = results[0].features;
+                _this.currentLandsRows = results[1].features;
+                _this.idLandInactive = results[1].features.map(function (i) {
+                    return i.attributes.COD_CPU;
+                });
+                return UtilityCase.sendDataOriginToHistoric(_this.config, _this.currentLotsRows, _this.currentPoinLotsRows, _this.currentLandsRows);
             }).then(function (results) {
-                return UtilityCase.deleteDataOrigin(_this.currentLotsRows, _this.currentUbicacionRows, _this.config);
+                return UtilityCase.deleteDataOrigin(_this.currentLotsRows, _this.currentPoinLotsRows, _this.currentLandsRows, _this.config);
             }).then(function (results) {
-                return UtilityCase.addDataNew(_this.lots, _this.ubicaciones, _this.config);
+                return UtilityCase.addDataNew(_this.lots, _this.pointLots, _this.lands, _this.config);
             }).then(function (results) {
-                return UtilityCase.updateStatusRequests(_this.lands, _this.codRequests, _this.caseRequest, _this.ubigeo, _this.config, lotsInactive = idLotesOriginales);
+                return UtilityCase.updateStatusRequests(_this.lands, _this.codRequests, _this.caseRequest, _this.ubigeo, _this.config, idLandInactive = _this.idLandInactive);
             }).catch(function (err) {
                 throw err;
             });
