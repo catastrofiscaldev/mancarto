@@ -43,7 +43,7 @@ define(["./UtilityCase"], function (UtilityCase) {
             var _this = this;
 
             return UtilityCase.checkResolutionDocument(this.newLandsGraphics, this.ubigeo, this.landUrl).then(function () {
-                return UtilityCase.getBlockFromLot(_this.lotGraphic[0].geometry, _this.blockUrl);
+                return UtilityCase.getBlockFromLot(_this.lotGraphic[0].geometry, _this.blockUrl, _this.config.geometryServiceUrl);
             }).then(function (block) {
                 return UtilityCase.checkExistLotUrban(_this.attributes, block, _this.lotUrl, _this.currentLotsRows, _this.ubigeo, checkSublotUrban = true);
             }).then(function (block) {

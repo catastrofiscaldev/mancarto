@@ -1,6 +1,6 @@
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
-define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks/StatisticDefinition", "esri/geometry/geometryEngine", "esri/geometry/Point", "jimu/dijit/Message", "dojo/promise/all", "esri/request", "./CustomException"], function (Deferred, QueryTask, Query, StatisticDefinition, geometryEngine, Point, Message, all, esriRequest, CustomException) {
+define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks/StatisticDefinition", "esri/geometry/geometryEngine", "esri/geometry/Point", "jimu/dijit/Message", "dojo/promise/all", "esri/request", "./CustomException", "esri/tasks/GeometryService"], function (Deferred, QueryTask, Query, StatisticDefinition, geometryEngine, Point, Message, all, esriRequest, CustomException, GeometryService) {
     /*
     * @description: Objeto que contiene las funciones para la subdivisión de lotes
     */
@@ -201,17 +201,23 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
 
             return response;
         },
-        getBlockFromLot: function getBlockFromLot(geometry, url) {
+        getBlockFromLot: function getBlockFromLot(geometry, url, geometryServiceUrl) {
             var deferred = new Deferred();
+            var geometryService = new GeometryService(geometryServiceUrl);
 
-            var queryBlock = new Query();
-            queryBlock.geometry = geometry;
-            queryBlock.outFields = ['*'];
-            queryBlock.returnGeometry = true;
-            var queryTaskBlock = new QueryTask(url);
-            queryTaskBlock.execute(queryBlock).then(function (response) {
+            geometryService.labelPoints([geometry]).then(function (labelPoints) {
+                if (labelPoints.length === 0) {
+                    return deferred.reject(new Error("No se pudo obtener el punto central para el lote para determinar la manzana"));
+                }
+                var queryBlock = new Query();
+                queryBlock.geometry = labelPoints[0];
+                queryBlock.outFields = ['*'];
+                queryBlock.returnGeometry = true;
+                var queryTaskBlock = new QueryTask(url);
+                return queryTaskBlock.execute(queryBlock);
+            }).then(function (response) {
                 if (response.features.length === 0) {
-                    return deferred.reject(new Error("No se encontraron manzanas"));
+                    return deferred.reject(new Error("No se encontraron manzanas para el lote"));
                 }
                 return deferred.resolve(response.features[0]);
             }).catch(function (err) {
@@ -219,6 +225,26 @@ define(["dojo/Deferred", "esri/tasks/QueryTask", "esri/tasks/query", "esri/tasks
             });
 
             return deferred.promise;
+
+            // const queryBlock = new Query();
+
+            // const lotObj = new this.Lot();
+            // const query = `${lotObj.ubigeo} = '${this.ubigeo}' and ${lotObj.idLotP} = ${this.currentLotsRows[0].attributes[lotObj.idLotP]}`; 
+            // // get centroid of geometry
+            // queryBlock.geometry = geometry.getCentroid();
+            // queryBlock.outFields = ['*'];
+            // queryBlock.returnGeometry = true;
+            // const queryTaskBlock = new QueryTask(url);
+            // queryTaskBlock.execute(queryBlock)
+            //     .then(response => {
+            //         if (response.features.length === 0) {
+            //             return deferred.reject(new Error("No se encontraron manzanas"));
+            //         }
+            //         return deferred.resolve(response.features[0]);
+            //     })
+            //     .catch(err => deferred.reject(err));
+
+            // return deferred.promise;
         },
         checkResolutionDocument: function checkResolutionDocument(newLandsGraphics, ubigeo, urlLand) {
             var _this = this;
